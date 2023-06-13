@@ -1,0 +1,30 @@
+[
+    {
+        "name": "Arc Extension 101 - Hello World",
+        "type": "arcApp",
+        "description": "A starter sample with dotnet",
+        "projectUrl": "https://github.com/Azure-Samples/",
+        "repositoryPath": "101---arcextension-helloworld"
+    },
+    {
+        "name": "Arc Extension 201 - Arc-enabled KeyVault",
+        "type": "arcApp",
+        "description": "A sample app with Arc-enabled KeyVault",
+        "projectUrl": "https://github.com/Azure-Samples/",
+        "repositoryPath": "201---arc-enabled-keyvault-sample"
+    },
+    {
+        "name": "Arc Extension 202 - Extension management",
+        "type": "arcApp",
+        "description": "A sample about extension management",
+        "projectUrl": "https://github.com/Azure-Samples/",
+        "repositoryPath": "202---arcextension-management"
+    },
+    {
+        "name": "Contoso Supermarket",
+        "type": "jumpstart",
+        "description": "Industry-based applications sample",
+        "projectUrl": "https://github.com/microsoft/",
+        "repositoryPath": "jumpstart-agora-apps"
+    }
+]

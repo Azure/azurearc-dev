@@ -1,0 +1,39 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- main
+
+pool:
+  vmImage: windows-latest
+
+steps:
+- script: |
+    npm install
+  displayName: 'Install npm'
+  
+- script: |
+    npm install -g vsce
+  displayName: 'Install vsce'
+
+- script: |
+    Powershell.exe -File .\build.ps1
+    echo See https://aka.ms/yaml
+  displayName: 'Build'
+
+- task: EsrpCodeSigning@4
+  inputs:
+    ConnectedServiceName: 'vscodeExtConnection'
+    FolderPath: '.\'
+    Pattern: '*.vsix'
+    CertificateId: '100040160'
+    SessionTimeout: '60'
+    MaxConcurrency: '50'
+    MaxRetryAttempts: '5'
+    PendingAnalysisWaitTimeoutMinutes: '5'
+
+- script: |
+    vsce publish -p $(publishPAT)
+  displayName: 'Publish'
