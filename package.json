@@ -1,0 +1,144 @@
+{
+  "name": "azurearc",
+  "publisher": "peterwu",
+  "displayName": "Azure Arc",
+  "description": "Azure Arc",
+  "version": "0.0.2",
+  "engines": {
+    "vscode": "^1.78.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/azure/azurearc-dev"
+  },
+  "activationEvents": [],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "azurearc.openWalkthrough",
+        "title": "Arc Extension: Open walkthrough"
+      },
+      {
+        "command": "azurearc.gettingStarted",
+        "title": "Arc Extension: Getting started"
+      },
+      {
+        "command": "azurearc.provisionLocalK8s",
+        "title": "Arc Extension: Provision Local K8S Cluster"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "arc-extension",
+          "title": "Arc Extension",
+          "icon": "$(azure)"
+        }
+      ]
+    },
+    "views": {
+      "arc-extension": [
+        {
+          "id": "devsessions",
+          "name": "Developer Sessions",
+          "icon": "$(azure)",
+          "contextualTitle": "Developer Sessions"
+        },
+        {
+          "id": "helpandfeedback",
+          "name": "Help & Feedback",
+          "icon": "$(azure)",
+          "contextualTitle": "Help & Feedback"
+        }
+      ]
+    },
+    "walkthroughs": [
+      {
+        "id": "walkthrough",
+        "title": "Azure Arc Developer Extension",
+        "icon": "media/arc.svg",
+        "description": "Learn to develop for the Edge by exploring resources and deploying a sample app",
+        "steps": [
+          {
+            "id": "gettingStarted",
+            "title": "Select a sample application",
+            "description": "Get started with a sample.\n[Get Started](command:azurearc.gettingStarted)",
+            "media": {
+              "image": "media/getsample.gif",
+              "altText": "Empty image"
+            }
+          },
+          {
+            "id": "provision",
+            "title": "Set up Kubernetes cluster for development",
+            "description": "Provision a local K8S or an AKS cluster for development.\n[Provision](command:azurearc.provisionK8s)",
+            "media": {
+              "image": "media/k8saks.png",
+              "altText": "Empty image"
+            }
+          },
+          {
+            "id": "buildanddeploy",
+            "title": "Put your application to test",
+            "description": "You can provision dependencies, build and deploy with a few clicks or commands",
+            "media": {
+              "markdown": "media/buildanddeploy.md"
+            }
+          },
+          {
+            "id": "learn",
+            "title": "Learn more by exploring tools and guidance",
+            "description": "Open help and feedback view and choose what you'd like to do next.\n[Help & Feedback](command:azurearc.openHelp)",
+            "media": {
+              "image": "media/azurearc.png",
+              "altText": "Empty image"
+            },
+            "completionEvents": [
+              "onView:arc-extension"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run package",
+    "compile": "webpack",
+    "watch": "webpack --watch",
+    "package": "webpack --mode production --devtool hidden-source-map",
+    "compile-tests": "tsc -p . --outDir out",
+    "watch-tests": "tsc -p . -w --outDir out",
+    "pretest": "npm run compile-tests && npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/glob": "^8.1.0",
+    "@types/mocha": "^10.0.1",
+    "@types/node": "16.x",
+    "@types/uuid": "^9.0.1",
+    "@types/vscode": "^1.78.0",
+    "@typescript-eslint/eslint-plugin": "^5.59.1",
+    "@typescript-eslint/parser": "^5.59.1",
+    "@vscode/test-electron": "^2.3.0",
+    "eslint": "^8.39.0",
+    "glob": "^8.1.0",
+    "mocha": "^10.2.0",
+    "ts-loader": "^9.4.2",
+    "typescript": "^5.0.4",
+    "webpack": "^5.81.0",
+    "webpack-cli": "^5.1.1"
+  },
+  "extensionDependencies": [
+    "ms-azuretools.azure-dev",
+    "ms-kubernetes-tools.aks-devx-tools"
+  ],
+  "dependencies": {
+    "axios": "^1.4.0",
+    "uuid": "^9.0.0"
+  }
+}

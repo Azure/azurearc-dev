@@ -1,0 +1,17 @@
+[
+    {
+        "name": "Arc Extension 101 - dotnet",
+        "description": "A starter template with dotnet",
+        "repositoryPath": "azd-starter-bicep"
+    },
+    {
+        "name": "Arc Extension 201 - dotnet",
+        "description": "A sample app that interacts with Arc-Enabled services",
+        "repositoryPath": "azd-starter-bicep"
+    },
+    {
+        "name": "Arc Extension 301 - dotnet",
+        "description": "A complex sample app with a real world application",
+        "repositoryPath": "azd-starter-bicep"
+    }
+]

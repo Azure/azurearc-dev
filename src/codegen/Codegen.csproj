@@ -1,0 +1,72 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <NoWarn>CS8600;CS8601;CS8602;CS8603;CS8604;CS8618;CS8622;CS8625;IL2075;IL2104</NoWarn>
+    <DebugType>none</DebugType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.CodeDom" Version="7.0.0" />
+    <PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="abbreviationsJson.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>abbreviationsJson.cs</LastGenOutput>
+    </None>
+    <None Update="MainBicep.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>mainBicep.cs</LastGenOutput>
+    </None>
+    <None Update="mainJson.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>mainJson.cs</LastGenOutput>
+    </None>
+    <None Update="mainParamsJson.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>mainParamsJson.cs</LastGenOutput>
+    </None>
+    <None Update="StorageAccount.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>storageAccount.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="abbreviationsJson.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>abbreviationsJson.tt</DependentUpon>
+    </Compile>
+    <Compile Update="mainBicep.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>MainBicep.tt</DependentUpon>
+    </Compile>
+    <Compile Update="mainJson.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>mainJson.tt</DependentUpon>
+    </Compile>
+    <Compile Update="mainParamsJson.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>mainParamsJson.tt</DependentUpon>
+    </Compile>
+    <Compile Update="StorageAccount.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>StorageAccount.tt</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+</Project>
