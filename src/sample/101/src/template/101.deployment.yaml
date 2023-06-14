@@ -1,0 +1,17 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dotnet-hello-world
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dotnet-hello-world
+  template:
+    metadata:
+      labels:
+        app: dotnet-hello-world
+    spec:
+      containers:
+      - name: dotnet-hello-world
+        image: jessetest.azurecr.io/samples/dotnet-hello-world:1.0
