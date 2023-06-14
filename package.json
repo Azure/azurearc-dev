@@ -27,10 +27,19 @@
         "title": "Arc Extension: Getting started"
       },
       {
-        "command": "azurearc.provisionLocalK8s",
-        "title": "Arc Extension: Provision Local K8S Cluster"
+        "command": "azurearc.buildImage",
+        "title": "Arc Extension: build image"
       }
     ],
+    "menus": {
+      "explorer/context": [
+        {
+          "command": "azurearc.buildImage",
+          "title": "Arc Build Image",
+          "group": "3.1_azurearc"
+        }
+      ]
+    },
     "viewsContainers": {
       "activitybar": [
         {
