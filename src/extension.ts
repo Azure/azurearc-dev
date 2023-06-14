@@ -36,6 +36,10 @@ export async function activate(context: vscode.ExtensionContext)
     context.subscriptions.push(vscode.commands.registerCommand('azurearc.provisionK8s', async () => {
         await showArcExtCmdQuickpick(context);
     }));
+
+    context.subscriptions.push(vscode.commands.registerCommand('azurearc.buildImage', async () => {
+        vscode.window.showInformationMessage(`Build docker file.`);
+    }));
 }
 
 export function deactivate() {}
