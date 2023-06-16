@@ -14,4 +14,4 @@ spec:
     spec:
       containers:
       - name: dotnet-hello-world
-        image: jessetest.azurecr.io/samples/dotnet-hello-world:1.0
+        image: docker.io/iwangjintianwork/dotnet-hello-world:3.0
