@@ -33,8 +33,21 @@
       {
         "command": "azurearc.build2Deploy",
         "title": "Arc Extension: Build to Deploy"
+      },
+      {
+        "command": "azurearc.buildImage",
+        "title": "Arc Extension: build image"
       }
     ],
+    "menus": {
+      "explorer/context": [
+        {
+          "command": "azurearc.buildImage",
+          "title": "Arc Build Image",
+          "group": "3.1_azurearc"
+        }
+      ]
+    },
     "viewsContainers": {
       "activitybar": [
         {
