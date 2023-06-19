@@ -27,10 +27,6 @@
         "title": "Arc Extension: Getting started"
       },
       {
-        "command": "azurearc.provisionLocalK8s",
-        "title": "Arc Extension: Provision Local K8S Cluster"
-      },
-      {
         "command": "azurearc.build2Deploy",
         "title": "Arc Extension: Build to Deploy"
       },
