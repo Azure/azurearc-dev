@@ -1,15 +1,20 @@
 import * as vscode from 'vscode';
-import * as process from 'process';
 import { HelpProvider } from './help';
-import { getContainerRegistryFromInputBox } from './common';
 import { showArcExtCmdQuickpick } from './quickpicks';
 import path = require('path');
+import { CloudGPTViewProvider } from './cloudGpt';
+import { getDockerCmds as getDockerCmds, getKubectlCmd } from './buildAndDeploy';
 
 export async function activate(context: vscode.ExtensionContext)
 {
     console.log('Congratulations, your extension "azurearc" is now active!');
     const helpprovider = new HelpProvider();
     vscode.window.registerTreeDataProvider('helpandfeedback', helpprovider);
+
+    const provider = new CloudGPTViewProvider(context.extensionUri);
+    context.subscriptions.push(vscode.window.registerWebviewViewProvider(
+        CloudGPTViewProvider.viewType, provider,  { webviewOptions: { retainContextWhenHidden: true } })
+    );
 
     context.subscriptions.push(vscode.commands.registerCommand('azurearc.showInfo', (msg) => {
         vscode.window.showInformationMessage(`Log: ${msg}`);
@@ -38,20 +43,32 @@ export async function activate(context: vscode.ExtensionContext)
         await showArcExtCmdQuickpick(context);
     }));
 
-    context.subscriptions.push(vscode.commands.registerCommand('azurearc.build2Deploy', async () => {
-        var input = await getContainerRegistryFromInputBox();
-        if(input != null){
-            let t = vscode.window.createTerminal();
-            t.show(true);
-            t.sendText(`docker build -t ${input} -f Dockerfile .`);
-            t.sendText(`docker push ${input}`);
-            t.sendText(`kubectl apply -f .\\template\\101.deployment.yaml`);
+    context.subscriptions.push(vscode.commands.registerCommand('azurearc.build2Deploy', async (selected) => {
+        const dockerCmds = await getDockerCmds(selected?.fsPath);
+        const kubectlCmd = await getKubectlCmd();
+        if (dockerCmds === undefined || kubectlCmd === undefined)
+        {
+            return;
         }
+
+        let t = vscode.window.createTerminal();
+        t.show(true);
+        dockerCmds.forEach(cmd => t.sendText(cmd));
+        t.sendText(kubectlCmd);
     }));
 
-    context.subscriptions.push(vscode.commands.registerCommand('azurearc.buildImage', async () => {
-        vscode.window.showInformationMessage(`Build docker file.`);
-    }));
+    vscode.workspace.onDidChangeConfiguration((event: vscode.ConfigurationChangeEvent) => {
+        if (event.affectsConfiguration('cloudgpt.apiKey'))
+        {
+            const config = vscode.workspace.getConfiguration('azurearc');
+            provider.setAuthenticationInfo({ apiKey: config.get('apiKey') });
+        }
+        else if (event.affectsConfiguration('cloudgpt.apiUrl')) {
+            const config = vscode.workspace.getConfiguration('chatgpt');
+            let url = config.get('apiUrl') as string;
+            provider.setSettings({ apiUrl: url });
+        }
+    });
 }
 
 export function deactivate() {}

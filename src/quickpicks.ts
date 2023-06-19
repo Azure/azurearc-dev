@@ -30,9 +30,9 @@ export const arcExtCmdOptions: common.ArcExtOption[] =
 
 export async function showSingularChoiceQuickpick(
     items: common.ArcExtOption[],
-    onChangeSelection: (e: readonly vscode.QuickPickItem[]) => any,
     title: string,
     placeholder: string,
+    execute: boolean = true,
     context?: vscode.ExtensionContext)
 {
     const quickPickOptions = {
@@ -40,8 +40,13 @@ export async function showSingularChoiceQuickpick(
         placeHolder: placeholder
     };
 
-    await vscode.window.showQuickPick(items, quickPickOptions)
-        .then(selection => (selection as common.ArcExtOption).action(context).catch(console.error));
+    const quickpick = vscode.window.showQuickPick(items, quickPickOptions);
+    if (execute)
+    {
+        await quickpick.then(selection => (selection as common.ArcExtOption).action(context).catch(console.error));
+    }
+
+    return await quickpick;
 }
 
 export async function showMultipleChoiceQuickpick(
@@ -55,7 +60,7 @@ export async function showMultipleChoiceQuickpick(
         { canPickMany: true, title: title, placeHolder: placeholder}
     ).then(selection => {
         if (selection) {
-            selection.forEach((_) => { _.action() });
+            selection.forEach((_) => { _.action(); });
         }
     });
 }
@@ -63,16 +68,7 @@ export async function showMultipleChoiceQuickpick(
 export async function showArcExtCmdQuickpick(context?: vscode.ExtensionContext)
 {
     await showSingularChoiceQuickpick(
-        arcExtCmdOptions,
-        selection => {
-            if (selection[0])
-            {
-                (selection[0] as common.ArcExtOption).action(context).catch(console.error);
-            }
-        },
-        'Arc Extension Commands',
-        'Select a command',
-        context);
+        arcExtCmdOptions, 'Arc Extension Commands', 'Select a command', true, context);
 }
 
 export async function selectSample()
@@ -83,15 +79,11 @@ export async function selectSample()
     const response = await axios.get(url);
     const templates = response.data as { name: string, description: string, repositoryPath: string }[];
     const options = templates.map(t => {
-        return { label: t.name, detail: t.description, data: t.repositoryPath } as common.ArcExtOption;
-    });
-
-    await showSingularChoiceQuickpick(
-        options,
-        async selection => {
-            if (selection[0])
-            {
-                const t = selection[0] as common.ArcExtOption;
+        return {
+            label: t.name,
+            detail: t.description,
+            data: t.repositoryPath,
+            action: async context => {
                 var dir = await common.openFileDialog(false, true, false, "Select Sample Working Directory");
 
                 if (dir === undefined)
@@ -99,7 +91,7 @@ export async function selectSample()
                     return;
                 }
 
-                const dest = path.join(dir, t.data!);
+                const dest = path.join(dir, t.repositoryPath!);
                 if (fs.existsSync(path.join(dest, 'azure.yaml')))
                 {
                     // Repo already exists, open directory.
@@ -108,10 +100,11 @@ export async function selectSample()
                 else
                 {
                     await vscode.commands.executeCommand(
-                        'git.clone', `https://github.com/Azure-Samples/${t.data}`, dir);
+                        'git.clone', `https://github.com/Azure-Samples/${t.repositoryPath}`, dir);
                 }
             }
-        },
-        'Arc Extension Samples',
-        'Select a sample');
+        } as common.ArcExtOption;
+    });
+
+    await showSingularChoiceQuickpick(options, 'Arc Extension Samples', 'Select a sample');
 }

@@ -77,15 +77,7 @@ export async function generateDependencyBicep(context?: vscode.ExtensionContext)
             ];
 
             await showSingularChoiceQuickpick(
-                options,
-                selection => {
-                    if (selection[0])
-                    {
-                        (selection[0] as common.ArcExtOption).action(context).catch(console.error);
-                    }
-                },
-                'Select resource definition based dir',
-                'Base dir where bicep files will be generated');
+                options, 'Select resource definition based dir', 'Base dir where bicep files will be generated');
         }
 
         if (baseDirPath === '')
