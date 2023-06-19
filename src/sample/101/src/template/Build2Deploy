@@ -1,3 +1,0 @@
-docker build -t {TAG} -f Dockerfile .
-docker push {TAG}
-kubectl apply -f .\template\101.deployment.yaml
