@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import * as process from 'process';
 import { HelpProvider } from './help';
+import { getContainerRegistryFromInputBox } from './common';
 import { showArcExtCmdQuickpick } from './quickpicks';
 import path = require('path');
 
@@ -35,6 +36,21 @@ export async function activate(context: vscode.ExtensionContext)
 
     context.subscriptions.push(vscode.commands.registerCommand('azurearc.provisionK8s', async () => {
         await showArcExtCmdQuickpick(context);
+    }));
+
+    context.subscriptions.push(vscode.commands.registerCommand('azurearc.build2Deploy', async () => {
+        var input = await getContainerRegistryFromInputBox();
+        if(input != null){
+            let t = vscode.window.createTerminal();
+            t.show(true);
+            t.sendText(`docker build -t ${input} -f Dockerfile .`);
+            t.sendText(`docker push ${input}`);
+            t.sendText(`kubectl apply -f .\\template\\101.deployment.yaml`);
+        }
+    }));
+
+    context.subscriptions.push(vscode.commands.registerCommand('azurearc.buildImage', async () => {
+        vscode.window.showInformationMessage(`Build docker file.`);
     }));
 }
 

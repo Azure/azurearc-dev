@@ -59,3 +59,13 @@ export async function getNullableBoolResponseFromInputBox(prompt: string)
 
     return (input === undefined) ? undefined : input.toLocaleLowerCase() === 'y';
 }
+
+export async function getContainerRegistryFromInputBox()
+{
+    const input = await vscode.window.showInputBox({
+        placeHolder: "The Uri of the Container Registry with repository",
+        prompt: "Give the Uri of the Container Registry with repository"
+    });
+
+    return (input === undefined) ? undefined : input.toLocaleLowerCase();
+}
