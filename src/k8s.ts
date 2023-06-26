@@ -40,16 +40,7 @@ export async function provisionK8S(context?: vscode.ExtensionContext)
         }
     ];
 
-    await showSingularChoiceQuickpick(
-        options,
-        selection => {
-            if (selection[0])
-            {
-                (selection[0] as common.ArcExtOption).action(context).catch(console.error);
-            }
-        },
-        'Provision K8S Cluster',
-        'Select K8S cluster type');
+    await showSingularChoiceQuickpick(options, 'Provision K8S Cluster', 'Select K8S cluster type');
 }
 
 export async function provisionLocalK8sCluster()

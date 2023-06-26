@@ -1,9 +1,10 @@
 {
   "name": "azurearc",
+  "icon": "media/azurearc.png",
   "publisher": "peterwu",
   "displayName": "Azure Arc",
   "description": "Azure Arc",
-  "version": "0.0.2",
+  "version": "0.0.4",
   "engines": {
     "vscode": "^1.78.0"
   },
@@ -29,16 +30,12 @@
       {
         "command": "azurearc.build2Deploy",
         "title": "Arc Extension: Build to Deploy"
-      },
-      {
-        "command": "azurearc.buildImage",
-        "title": "Arc Extension: build image"
       }
     ],
     "menus": {
       "explorer/context": [
         {
-          "command": "azurearc.buildImage",
+          "command": "azurearc.build2Deploy",
           "title": "Arc Build Image",
           "group": "3.1_azurearc"
         }
@@ -62,12 +59,36 @@
           "contextualTitle": "Developer Sessions"
         },
         {
+          "type": "webview",
+          "id": "chatView",
+          "name": "CloudGPT",
+          "icon": "$(azure)",
+          "contextualTitle": "Cloud GPT"
+        },
+        {
           "id": "helpandfeedback",
           "name": "Help & Feedback",
           "icon": "$(azure)",
           "contextualTitle": "Help & Feedback"
         }
       ]
+    },
+    "configuration": {
+        "title": "CloudGPT",
+        "type": "object",
+        "properties": {
+          "cloudgpt.apiKey": {
+            "markdownDescription": "CloudGPT API key",
+            "type": "string",
+            "order": 0
+          },
+          "cloudgpt.apiUrl": {
+            "markdownDescription": "CloudGPT API url",
+            "type": "string",
+            "default": "https://cloudgpt.azurewebsites.net/api/cloud-gpt/scenario/azurearcdev",
+            "order": 1
+          }
+        }
     },
     "walkthroughs": [
       {
@@ -151,6 +172,9 @@
     "ms-kubernetes-tools.aks-devx-tools"
   ],
   "dependencies": {
+    "chatgpt": "^5.2.2",
+    "gpt3-tokenizer": "^1.1.5",
+    "node-fetch": "^3.3.0",
     "axios": "^1.4.0",
     "uuid": "^9.0.0"
   }
