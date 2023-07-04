@@ -74,21 +74,21 @@
       ]
     },
     "configuration": {
-        "title": "CloudGPT",
-        "type": "object",
-        "properties": {
-          "cloudgpt.apiKey": {
-            "markdownDescription": "CloudGPT API key",
-            "type": "string",
-            "order": 0
-          },
-          "cloudgpt.apiUrl": {
-            "markdownDescription": "CloudGPT API url",
-            "type": "string",
-            "default": "https://cloudgpt.azurewebsites.net/api/cloud-gpt/scenario/azurearcdev",
-            "order": 1
-          }
+      "title": "CloudGPT",
+      "type": "object",
+      "properties": {
+        "cloudgpt.apiKey": {
+          "markdownDescription": "CloudGPT API key",
+          "type": "string",
+          "order": 0
+        },
+        "cloudgpt.apiUrl": {
+          "markdownDescription": "CloudGPT API url",
+          "type": "string",
+          "default": "https://cloudgpt.azurewebsites.net/api/cloud-gpt/scenario/azurearcdev",
+          "order": 1
         }
+      }
     },
     "walkthroughs": [
       {
