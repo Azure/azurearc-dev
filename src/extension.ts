@@ -4,6 +4,7 @@ import { showArcExtCmdQuickpick } from './quickpicks';
 import path = require('path');
 import { CloudGPTViewProvider } from './cloudGpt';
 import { getDockerCmds as getDockerCmds, getKubectlCmd } from './buildAndDeploy';
+import {Terminal} from 'vscode'
 
 export async function activate(context: vscode.ExtensionContext)
 {
@@ -50,8 +51,13 @@ export async function activate(context: vscode.ExtensionContext)
         {
             return;
         }
-
-        let t = vscode.window.createTerminal();
+        var t: vscode.Terminal;
+        if( vscode.window.terminals.length > 0) {
+            t = vscode.window.terminals[vscode.window.terminals.length - 1]
+        }
+        else{
+            t = vscode.window.createTerminal();
+        }
         t.show(true);
         dockerCmds.forEach(cmd => t.sendText(cmd));
         t.sendText(kubectlCmd);
