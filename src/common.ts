@@ -45,6 +45,11 @@ export async function openFileDialog(
     }
 }
 
+export class AppSettings
+{
+    static readonly TERMINAL= 'azurearc-dev';
+};
+
 export async function getNullableBoolResponseFromInputBox(prompt: string)
 {
     const input = await vscode.window.showInputBox({
