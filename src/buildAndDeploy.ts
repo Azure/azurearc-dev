@@ -1,13 +1,12 @@
 import * as vscode from 'vscode';
-import * as fs from 'fs';
 import * as path from 'path';
 import * as common from './common';
 import { showSingularChoiceQuickpick } from './quickpicks';
 
 export async function getDockerCmds(dockerfile: string)
 {
-    var cr = await common.getContainerRegistryFromInputBox();
-    if (cr === undefined)
+    var img = await common.getImageName();
+    if (img === undefined)
     {
         return;
     }
@@ -30,7 +29,8 @@ export async function getDockerCmds(dockerfile: string)
         dockerfile = selection!.label;
     }
 
-    return [ `docker build -t ${cr} -f ${dockerfile} ${path.dirname(dockerfile)};`, `docker push ${cr}` ];
+    const imageNameWithTag = `${img}:latest`;
+    return [ `docker build -t ${imageNameWithTag} -f ${dockerfile} ${path.dirname(dockerfile)};`, `docker push ${imageNameWithTag}` ];
 }
 
 export async function getKubectlCmd()

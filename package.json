@@ -4,7 +4,7 @@
   "publisher": "peterwu",
   "displayName": "Azure Arc",
   "description": "Azure Arc",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "engines": {
     "vscode": "^1.78.0"
   },
@@ -30,6 +30,10 @@
       {
         "command": "azurearc.build2Deploy",
         "title": "Arc Extension: Build to Deploy"
+      },
+      {
+        "command": "azurearc.validateHelm",
+        "title": "Arc Extension: Validate helm chart"
       }
     ],
     "menus": {
@@ -77,12 +81,12 @@
       "title": "CloudGPT",
       "type": "object",
       "properties": {
-        "cloudgpt.apiKey": {
+        "azurearc.apiKey": {
           "markdownDescription": "CloudGPT API key",
           "type": "string",
           "order": 0
         },
-        "cloudgpt.apiUrl": {
+        "azurearc.apiUrl": {
           "markdownDescription": "CloudGPT API url",
           "type": "string",
           "default": "https://cloudgpt.azurewebsites.net/api/cloud-gpt/scenario/azurearcdev",

@@ -5,6 +5,7 @@ import axios from 'axios';
 import * as common from './common';
 import { provisionK8S } from './k8s';
 import { generateDependencyBicep } from './bicep';
+import { validateHelm } from './helm';
 
 export const arcExtCmdOptions: common.ArcExtOption[] =
 [
@@ -25,6 +26,12 @@ export const arcExtCmdOptions: common.ArcExtOption[] =
         generateDependencyBicep,
         '',
         'Provision Azure/Arc resources on Azure.'
+    ),
+    new common.ArcExtOption(
+        'Helm chart validation',
+        validateHelm,
+        '',
+        'Validate helm charts against Arc requirements.'
     )
 ];
 

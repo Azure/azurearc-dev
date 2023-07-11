@@ -79,18 +79,18 @@ export async function generateDependencyBicep(context?: vscode.ExtensionContext)
             await showSingularChoiceQuickpick(
                 options, 'Select resource definition based dir', 'Base dir where bicep files will be generated');
         }
+    }
 
-        if (baseDirPath === '')
+    if (baseDirPath === '')
+    {
+        // Get base dir path and store in workspace state.
+        baseDirPath = await common.openFileDialog(false, true, false, 'Select Bicep base folder');
+        if (baseDirPath === undefined)
         {
-            // Get base dir path and store in workspace state.
-            baseDirPath = await common.openFileDialog(false, true, false, 'Select Bicep base folder');
-            if (baseDirPath === undefined)
-            {
-                return;
-            }
-
-            context.workspaceState.update(codegenBasePathKeyName, baseDirPath);
+            return;
         }
+
+        context?.workspaceState.update(codegenBasePathKeyName, baseDirPath);
     }
 
     await showMultipleChoiceQuickpick(
@@ -121,7 +121,7 @@ export async function codegen(codegenBaseDir: string)
                 'Detected exsiting Bicep files that will be overwritten.',
                 {
                     modal: true,
-                    detail: "Select how you wouldl ike to resolve conflicts."
+                    detail: "Select how you would like to resolve conflicts."
                 },
                 overwrite,
                 rename,
