@@ -4,7 +4,8 @@ import { showArcExtCmdQuickpick } from './quickpicks';
 import path = require('path');
 import { CloudGPTViewProvider } from './cloudGpt';
 import { getDockerCmds as getDockerCmds, getKubectlCmd } from './buildAndDeploy';
-import {Terminal} from 'vscode'
+import {Terminal} from 'vscode';
+import { outputChannel, validateHelm } from './helm';
 
 export async function activate(context: vscode.ExtensionContext)
 {
@@ -44,13 +45,23 @@ export async function activate(context: vscode.ExtensionContext)
         await showArcExtCmdQuickpick(context);
     }));
 
+    context.subscriptions.push(vscode.commands.registerCommand('azurearc.validateHelm', async () => {
+        await validateHelm();
+    }));
+
     context.subscriptions.push(vscode.commands.registerCommand('azurearc.build2Deploy', async (selected) => {
         const dockerCmds = await getDockerCmds(selected?.fsPath);
-        const kubectlCmd = await getKubectlCmd();
-        if (dockerCmds === undefined || kubectlCmd === undefined)
+        if (dockerCmds === undefined)
         {
             return;
         }
+
+        const kubectlCmd = await getKubectlCmd();
+        if (kubectlCmd === undefined)
+        {
+            return;
+        }
+
         var t: vscode.Terminal;
         if( vscode.window.terminals.length > 0) {
             t = vscode.window.terminals[vscode.window.terminals.length - 1]
@@ -64,17 +75,19 @@ export async function activate(context: vscode.ExtensionContext)
     }));
 
     vscode.workspace.onDidChangeConfiguration((event: vscode.ConfigurationChangeEvent) => {
-        if (event.affectsConfiguration('cloudgpt.apiKey'))
+        if (event.affectsConfiguration('azurearc.apiKey'))
         {
             const config = vscode.workspace.getConfiguration('azurearc');
             provider.setAuthenticationInfo({ apiKey: config.get('apiKey') });
         }
-        else if (event.affectsConfiguration('cloudgpt.apiUrl')) {
-            const config = vscode.workspace.getConfiguration('chatgpt');
+        else if (event.affectsConfiguration('azurearc.apiUrl')) {
+            const config = vscode.workspace.getConfiguration('azurearc');
             let url = config.get('apiUrl') as string;
             provider.setSettings({ apiUrl: url });
         }
     });
 }
 
-export function deactivate() {}
+export function deactivate() {
+    outputChannel?.dispose();
+}

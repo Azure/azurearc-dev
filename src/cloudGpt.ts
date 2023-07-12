@@ -234,7 +234,7 @@ export class CloudGPTViewProvider implements vscode.WebviewViewProvider {
 
         const headers = {
             "Content-Type": "application/json",
-            "api-key": this._authInfo.apiKey,
+            "api-key": this._authInfo.apiKey
         };
 
         const data = { question: this._fullPrompt };
