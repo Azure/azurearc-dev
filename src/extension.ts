@@ -1,15 +1,39 @@
 import * as vscode from 'vscode';
+import { v4 as uuidv4 } from 'uuid';
 import { HelpProvider } from './help';
 import { showArcExtCmdQuickpick } from './quickpicks';
 import path = require('path');
 import { CloudGPTViewProvider } from './cloudGpt';
 import { getDockerCmds as getDockerCmds, getKubectlCmd } from './buildAndDeploy';
-import {Terminal} from 'vscode';
 import { outputChannel, validateHelm } from './helm';
+import { TelemetryEvent, configureTelemetryReporter, sendTelemetryEvent } from './telemetry';
+
+const instanceId = uuidv4();
 
 export async function activate(context: vscode.ExtensionContext)
 {
-    console.log('Congratulations, your extension "azurearc" is now active!');
+    configureTelemetryReporter(context);
+
+    console.log('Activating extension "azurearc"');
+    sendTelemetryEvent(TelemetryEvent.activate, { instanceId: instanceId });
+
+    context.subscriptions.push(vscode.workspace.onDidChangeConfiguration(event => {
+        if (event.affectsConfiguration('telemetry.telemetryLevel'))
+        {
+            configureTelemetryReporter(context);
+        }
+        else if (event.affectsConfiguration('azurearc.apiKey'))
+        {
+            const config = vscode.workspace.getConfiguration('azurearc');
+            provider.setAuthenticationInfo({ apiKey: config.get('apiKey') });
+        }
+        else if (event.affectsConfiguration('azurearc.apiUrl')) {
+            const config = vscode.workspace.getConfiguration('azurearc');
+            let url = config.get('apiUrl') as string;
+            provider.setSettings({ apiUrl: url });
+        }
+    }));
+
     const helpprovider = new HelpProvider();
     vscode.window.registerTreeDataProvider('helpandfeedback', helpprovider);
 
@@ -63,29 +87,19 @@ export async function activate(context: vscode.ExtensionContext)
         }
 
         var t: vscode.Terminal;
-        if( vscode.window.terminals.length > 0) {
-            t = vscode.window.terminals[vscode.window.terminals.length - 1]
+        if (vscode.window.terminals.length > 0)
+        {
+            t = vscode.window.terminals[vscode.window.terminals.length - 1];
         }
-        else{
+        else
+        {
             t = vscode.window.createTerminal();
         }
+
         t.show(true);
         dockerCmds.forEach(cmd => t.sendText(cmd));
         t.sendText(kubectlCmd);
     }));
-
-    vscode.workspace.onDidChangeConfiguration((event: vscode.ConfigurationChangeEvent) => {
-        if (event.affectsConfiguration('azurearc.apiKey'))
-        {
-            const config = vscode.workspace.getConfiguration('azurearc');
-            provider.setAuthenticationInfo({ apiKey: config.get('apiKey') });
-        }
-        else if (event.affectsConfiguration('azurearc.apiUrl')) {
-            const config = vscode.workspace.getConfiguration('azurearc');
-            let url = config.get('apiUrl') as string;
-            provider.setSettings({ apiUrl: url });
-        }
-    });
 }
 
 export function deactivate() {
