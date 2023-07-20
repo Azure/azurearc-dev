@@ -4,7 +4,9 @@ import { showSingularChoiceQuickpick } from './quickpicks';
 
 export const outputChannelName = "Azure Arc";
 
+const path = require('path');
 const imageNameKeyName = "imgName";
+const chatRepoKeyName = "helmRepo";
 
 export class ArcExtOption implements vscode.QuickPickItem
 {
@@ -127,4 +129,25 @@ export function reportProgress(
 
     progress.report({ increment: targetProgress - currentProgress, message: message });
     return targetProgress;
+}
+
+
+export async function getChartRepo(context?: vscode.ExtensionContext)
+{
+    if (vscode.workspace.workspaceFolders === undefined)
+    {
+        return;
+    }
+    const workspace = vscode.workspace.workspaceFolders[0].uri.fsPath;
+    const ymlFiles = await vscode.workspace.findFiles("**/*Chart.yaml");
+    const options = ymlFiles.map(_ => {
+        return { label: path.dirname(_.fsPath)  } as ArcExtOption;
+    });
+    const selection = await showSingularChoiceQuickpick(
+        options, 'Chart Repo Location', 'Select a Chart Repo', false);
+    if (selection === undefined)
+    {
+        return;
+    }
+    return selection!.label;
 }

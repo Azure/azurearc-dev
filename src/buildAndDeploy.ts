@@ -33,20 +33,13 @@ export async function getDockerCmds(dockerfile: string)
     return [ `docker build -t ${imageNameWithTag} -f ${dockerfile} ${path.dirname(dockerfile)};`, `docker push ${imageNameWithTag}` ];
 }
 
-export async function getKubectlCmd()
+export async function getHelmCmd()
 {
-    const yamls = await vscode.workspace.findFiles("**/*.yaml");
-    const options = yamls.map(_ => {
-        return { label: _.fsPath } as common.ArcExtOption;
-    });
-
-    const selection = await showSingularChoiceQuickpick(
-        options, 'Kubernetes Deployment Yaml Location', 'Select a deployment yaml', false);
-    
-    if (selection === undefined)
+    var chartRepo = await common.getChartRepo();
+    if (chartRepo === undefined)
     {
         return;
     }
-
-    return `kubectl apply -f ${selection!.label}`;
+    return `helm install ${chartRepo} --generate-name`;
 }
+
