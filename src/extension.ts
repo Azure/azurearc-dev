@@ -17,6 +17,14 @@ export async function activate(context: vscode.ExtensionContext)
     console.log('Activating extension "azurearc"');
     sendTelemetryEvent(TelemetryEvent.activate, { instanceId: instanceId });
 
+    const helpprovider = new HelpProvider();
+    vscode.window.registerTreeDataProvider('helpandfeedback', helpprovider);
+
+    const provider = new CloudGPTViewProvider(context.extensionUri);
+    context.subscriptions.push(vscode.window.registerWebviewViewProvider(
+        CloudGPTViewProvider.viewType, provider,  { webviewOptions: { retainContextWhenHidden: true } })
+    );
+
     context.subscriptions.push(vscode.workspace.onDidChangeConfiguration(event => {
         if (event.affectsConfiguration('telemetry.telemetryLevel'))
         {
@@ -33,14 +41,6 @@ export async function activate(context: vscode.ExtensionContext)
             provider.setSettings({ apiUrl: url });
         }
     }));
-
-    const helpprovider = new HelpProvider();
-    vscode.window.registerTreeDataProvider('helpandfeedback', helpprovider);
-
-    const provider = new CloudGPTViewProvider(context.extensionUri);
-    context.subscriptions.push(vscode.window.registerWebviewViewProvider(
-        CloudGPTViewProvider.viewType, provider,  { webviewOptions: { retainContextWhenHidden: true } })
-    );
 
     context.subscriptions.push(vscode.commands.registerCommand('azurearc.showInfo', (msg) => {
         vscode.window.showInformationMessage(`Log: ${msg}`);
