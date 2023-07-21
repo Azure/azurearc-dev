@@ -30,7 +30,7 @@ vsce package
 <details>
 <summary><b>Building from source with chatgpt module</b></summary>
 
-To build the extension from source, clone the repository and run `npm install` to install the dependencies. You have to change some code in `chatgpt` module because VSCode runtime does not support `fetch`. Open `node_modules/chatgpt/dist/index.js` and add the following code at the top of the file:
+To build the extension from source, clone the repository and run `npm install` to install the dependencies. You have to change some code in `chatgpt` module because VSCode runtime does not support `fetch`. Open `node_modules/chatgpt/dist/index.js` (if not found, check `node_modules\chatgpt\build\index.js` instead) and add the following code at the top of the file:
 
 ```js
 import fetch from 'node-fetch'
@@ -68,7 +68,7 @@ function encode(input) {
 
 due to the fact that the `@dqbd/tiktoken` module is causing problems with the VSCode runtime. Delete `node_modules/@dqbd/tiktoken` directory as well. *If you know how to fix this, please let me know.*
 
-In file `node_modules/chatgpt/build/index.d.ts`, change line 1 to
+In file `node_modules/chatgpt/build/index.d.ts` (or `node_modules\chatgpt\build\index.d.ts`), change line 1 to
 
 ```js
 import * as Keyv from 'keyv';
