@@ -1,7 +1,6 @@
 import * as assert from 'assert';
 import * as vscode from 'vscode';
 import * as quickpicks from '../../quickpicks';
-import { provisionK8S } from '../../k8s';
 import { generateDependencyBicep } from '../../bicep';
 
 suite('Extension Test Suite', () => {
@@ -10,8 +9,7 @@ suite('Extension Test Suite', () => {
     test('Test UI element invocation', async () => {
         // Quick picks
         await quickpicks.showArcExtCmdQuickpick();
-        await quickpicks.selectSample();
-        await provisionK8S();
+        await quickpicks.selectSampleType();
         await generateDependencyBicep();
 
         // Walkthrough

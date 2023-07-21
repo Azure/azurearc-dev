@@ -1,0 +1,30 @@
+[
+    {
+        "name": "$(rocket) Arc Extension 101 - dotnet",
+        "type": "arcApp",
+        "description": "A starter template with dotnet",
+        "projectUrl": "https://github.com/Azure-Samples/",
+        "repositoryPath": "azurearc-samples"
+    },
+    {
+        "name": "Arc Extension 201 - dotnet",
+        "type": "arcApp",
+        "description": "A sample app that interacts with Arc-Enabled services",
+        "projectUrl": "https://github.com/Azure-Samples/",
+        "repositoryPath": "azurearc-samples"
+    },
+    {
+        "name": "Arc Extension 301 - dotnet",
+        "type": "arcApp",
+        "description": "A complex sample app with a real world application",
+        "projectUrl": "https://github.com/Azure-Samples/",
+        "repositoryPath": "azurearc-samples"
+    },
+    {
+        "name": "Contoso Supermarket",
+        "type": "jumpstart",
+        "description": "Industry-based applications sample",
+        "projectUrl": "https://github.com/microsoft/",
+        "repositoryPath": "jumpstart-agora-apps"
+    }
+]

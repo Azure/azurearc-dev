@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { showSingularChoiceQuickpick } from './quickpicks';
 
 export const outputChannelName = "Azure Arc";
+export const terminaName= 'Azure Arc';
 
 const imageNameKeyName = "imgName";
 
@@ -56,10 +57,13 @@ export async function openFileDialog(
     }
 }
 
-export class AppSettings
+export function executeInTerminal(cmd: string)
 {
-    static readonly TERMINAL= 'azurearc-dev';
-};
+    var existingTerminal = vscode.window.terminals.find(terminal => terminal.name === terminaName);
+    var terminal = existingTerminal === undefined ? vscode.window.createTerminal(terminaName) : existingTerminal;
+    terminal.show(true);
+    terminal.sendText(cmd);
+}
 
 export async function getNullableBoolResponseFromInputBox(prompt: string)
 {
@@ -135,7 +139,6 @@ export function reportProgress(
     return targetProgress;
 }
 
-
 export async function getChartRepo(context?: vscode.ExtensionContext)
 {
     const ymlFiles = await vscode.workspace.findFiles("**/*Chart.yaml");
@@ -149,4 +152,13 @@ export async function getChartRepo(context?: vscode.ExtensionContext)
         return;
     }
     return selection!.label;
+}
+
+export function encodeVsCodeCmdArgs(args: any[])
+{
+    const encodedArgs = encodeURIComponent(
+        JSON.stringify(args)
+    );
+
+    console.log(encodedArgs);
 }
