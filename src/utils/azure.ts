@@ -14,19 +14,22 @@ export class ResourceGroupItem implements ArcExtOption
     public description: string;
     public resourceGroup: ResourceGroup;
     public resources: GenericResourceExpanded[];
+    picked: boolean = false;
 
     constructor(
         label: string,
         action: (context?: vscode.ExtensionContext) => Promise<void>,
         description: string,
         resourceGroup: ResourceGroup,
-        resources: GenericResourceExpanded[])
+        resources: GenericResourceExpanded[],
+        picked: boolean = false)
     {
         this.label = label;
         this.action = action;
         this.description = description;
         this.resourceGroup = resourceGroup;
         this.resources = resources;
+        this.picked = picked;
     }
 }
 
@@ -38,6 +41,7 @@ export class SubscriptionItem implements ArcExtOption
     session: AzureSession;
     subscription: SubscriptionModels.Subscription;
     resourceGroups: ResourceGroupItem[];
+    picked: boolean = false;
 
     constructor(
         label: string,
@@ -45,7 +49,8 @@ export class SubscriptionItem implements ArcExtOption
         description: string,
         session: AzureSession,
         subscription: SubscriptionModels.Subscription,
-        resourceGroups: ResourceGroupItem[])
+        resourceGroups: ResourceGroupItem[],
+        picked: boolean = false)
     {
         this.label = label;
         this.action = action;
@@ -53,6 +58,7 @@ export class SubscriptionItem implements ArcExtOption
         this.session = session;
         this.subscription = subscription;
         this.resourceGroups = resourceGroups;
+        this.picked = picked;
     }
 
     getResourceCount()
@@ -119,7 +125,9 @@ export async function ensureLoggedIn()
     return loggedIn;
 }
 
-export async function buildSubscriptionItems(): Promise<SubscriptionItem[]>
+export async function buildSubscriptionItems(
+    interactive: boolean = true,
+    subRgSelection?: { [key: string]: string[] }): Promise<SubscriptionItem[]>
 {
     return await vscode.window.withProgress({
         location: { viewId: 'arccluster' },
@@ -135,61 +143,52 @@ export async function buildSubscriptionItems(): Promise<SubscriptionItem[]>
         ensureLoggedIn();
 
         currProg = reportProgress(progress, currProg, loginProgress);
-        const subscriptionItems = await loadSubscriptionItems();
 
+        const subscriptionItems = await loadSubscriptionItems(interactive, Object.keys(subRgSelection || {}));
         currProg = reportProgress(progress, currProg, loadSubProgress);
-        const selectedSubs = await showMultipleChoiceQuickpick(
-            subscriptionItems, 'Select subscriptions', 'Select subscriptions', false);
-
-        if (selectedSubs === undefined || selectedSubs.length === 0)
+        if (subscriptionItems === undefined || subscriptionItems.length === 0)
         {
             return [];
         }
 
-        var subItems: SubscriptionItem[] = [];
-        const rgSelectionProgressInc = (loadRgProgress - loadSubProgress) / selectedSubs.length;
-        for (const sub of selectedSubs as SubscriptionItem[])
+        const rgSelectionProgressInc = (loadRgProgress - loadSubProgress) / subscriptionItems.length;
+        for (const sub of subscriptionItems)
         {
-            const rgItems = await loadResourceGroupItems(sub);
-            if (rgItems.length === 0)
-            {
-                continue;
-            }
-
-            const selectedRgs = await showMultipleChoiceQuickpick(
-                rgItems, `Select Resource Groups from '${sub.label}'`, 'Select Resource Groups', false);
-
-            if (selectedRgs === undefined || selectedRgs.length === 0)
-            {
-                continue;
-            }
-
-            sub.resourceGroups = [];
-            sub.resourceGroups.push(...selectedRgs as ResourceGroupItem[]);
-            subItems.push(sub);
+            const key: string = sub.subscription.subscriptionId!;
+            const rgList: string[] = subRgSelection ? subRgSelection[key] : [];
+            await loadResourceGroupItems(sub, interactive, rgList);
             currProg = reportProgress(progress, currProg, currProg + rgSelectionProgressInc);
         };
 
         currProg = reportProgress(progress, currProg, completeProgress);
-        return subItems;
+        return subscriptionItems;
     });
 }
 
-export async function loadSubscriptionItems() : Promise<SubscriptionItem[]>
+export async function loadSubscriptionItems(
+    interactive: boolean = true, subscriptionFilter?: string[]) : Promise<SubscriptionItem[]>
 {
     await azureAccountApi.waitForFilters();
-    const subscriptionItems: SubscriptionItem[] = [];
+    var subscriptionItems: SubscriptionItem[] = [];
+    const hasFilter = subscriptionFilter !== undefined && subscriptionFilter.length > 0;
     for (const session of azureAccountApi.sessions)
     {
-        const subscriptionClient = new SubscriptionClient(session.credentials2);
-        console.log(`Sub client created for '${session.userId}, ${session.environment}'.`);
-
         try
         {
-            const subscriptions = await listAll(
+            const subscriptionClient = new SubscriptionClient(session.credentials2);
+            console.log(`Sub client created for '${session.userId}, ${session.environment}'.`);
+
+            var subscriptions = await listAll(
                 subscriptionClient.subscriptions, subscriptionClient.subscriptions.list());
 
-            console.log(`Sub listed.`);
+            // Apply subscription filter silently if filter is specified in non-interactive subscription load.
+            // Pre-select the selected subscriptions for interactive subscription load with filter.
+            if (hasFilter && !interactive)
+            {
+                subscriptions =
+                    subscriptions.filter(_ => subscriptionFilter.includes(_.subscriptionId || ''));
+            }
+
             subscriptionItems.push(...subscriptions.map(subscription => 
                 new SubscriptionItem(
                     subscription.displayName || '',
@@ -197,7 +196,8 @@ export async function loadSubscriptionItems() : Promise<SubscriptionItem[]>
                     subscription.subscriptionId || '',
                     session,
                     subscription,
-                    [])));
+                    [],
+                    hasFilter && subscriptionFilter.includes(subscription.subscriptionId || ''))));
         }
         catch (error)
         {
@@ -207,27 +207,77 @@ export async function loadSubscriptionItems() : Promise<SubscriptionItem[]>
 
     subscriptionItems.sort((a, b) => a.label.localeCompare(b.label));
 
-    console.log('Subscriptions loaded.');
+    if (interactive)
+    {
+        const selectedSubs = await showMultipleChoiceQuickpick(
+            subscriptionItems, 'Select subscriptions', 'Select subscriptions', false);
+        if (selectedSubs === undefined || selectedSubs.length === 0)
+        {
+            return [];
+        }
+
+        return selectedSubs as SubscriptionItem[];
+    }
+
     return subscriptionItems;
 }
 
-export async function loadResourceGroupItems(subscriptionItem: SubscriptionItem) : Promise<ResourceGroupItem[]>
+export async function loadResourceGroupItems(
+    subscriptionItem: SubscriptionItem,
+    interactive: boolean = true,
+    resourceGroupFilter?: string[]) : Promise<ResourceGroupItem[]>
 {
     const { session, subscription } = subscriptionItem;
-    const rgItems: ResourceGroupItem[] = [];
+    var rgItems: ResourceGroupItem[] = [];
+    const hasFilter = resourceGroupFilter !== undefined && resourceGroupFilter.length > 0;
 
-    const armClient = new ResourceManagementClient(session.credentials2, subscription.subscriptionId!);
-    const resourceGroups = await listAll(armClient.resourceGroups, armClient.resourceGroups.list());
+    try
+    {
+        const armClient = new ResourceManagementClient(session.credentials2, subscription.subscriptionId!);
+        var resourceGroups = await listAll(armClient.resourceGroups, armClient.resourceGroups.list());
+    
+        // Apply resource group filter silently if filter is specified in non-interactive resource group load.
+        // Pre-select the selected resource groups for interactive resource group load with filter.
+        if (hasFilter && !interactive)
+        {
+            resourceGroups = resourceGroups.filter(_ => resourceGroupFilter.includes(_.name || ''));
+        }
 
-    rgItems.push(...resourceGroups.map(rg => ({
-        label: rg.name || '',
-        action: async () => {},
-        description: rg.location,
-        resourceGroup: rg,
-        resources: [],
-    })));
+        rgItems.push(...resourceGroups.map(rg => ({
+            label: rg.name || '',
+            action: async () => {},
+            description: rg.location,
+            resourceGroup: rg,
+            resources: [],
+            picked: hasFilter && resourceGroupFilter.includes(rg.name || '')
+        })));
+    }
+    catch (error)
+    {
+        console.log(`Error listing resource groups for '${session.userId}': ${error}`);
+    }
 
     rgItems.sort((a, b) => (a.label || '').localeCompare(b.label || ''));
+    if (rgItems.length === 0)
+    {
+        return [];
+    }
+
+    if (interactive)
+    {
+        const selectedRgs = await showMultipleChoiceQuickpick(
+            rgItems, `Select Resource Groups from '${subscriptionItem.label}'`, 'Select Resource Groups', false);
+    
+        if (selectedRgs === undefined || selectedRgs.length === 0)
+        {
+            return [];
+        }
+
+        rgItems = selectedRgs as ResourceGroupItem[];
+    }
+
+    subscriptionItem.resourceGroups = [];
+    subscriptionItem.resourceGroups.push(...rgItems);
     return rgItems;
 }
 

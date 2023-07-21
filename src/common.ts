@@ -130,7 +130,6 @@ export function reportProgress(
     return targetProgress;
 }
 
-
 export async function getChartRepo(context?: vscode.ExtensionContext)
 {
     const ymlFiles = await vscode.workspace.findFiles("**/*Chart.yaml");

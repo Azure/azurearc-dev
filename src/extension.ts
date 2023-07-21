@@ -8,8 +8,8 @@ import { getDockerCmds as getDockerCmds, getHelmCmd } from './buildAndDeploy';
 import { outputChannel, validateHelm } from './helm';
 import { TelemetryEvent, configureTelemetryReporter, sendTelemetryEvent } from './telemetry';
 import { azureAccountProvider, isLoggedIn } from './utils/azure';
-import { ArcClustersProvider } from './views/arcClusters';
-import { LocalCluster, LocalClustersProvider } from './views/localClusters';
+import { ArcClusterViewItem, ArcClustersProvider, disconnectFromArc } from './views/arcClusters';
+import { LocalCluster, LocalClustersProvider, connectToArc, createLocalCluster } from './views/localClusters';
 
 const instanceId = uuidv4();
 
@@ -23,7 +23,7 @@ export async function activate(context: vscode.ExtensionContext)
     const helpprovider = new HelpProvider();
     vscode.window.registerTreeDataProvider('helpandfeedback', helpprovider);
 
-    const arcClusterProvider = new ArcClustersProvider();
+    const arcClusterProvider = new ArcClustersProvider(context);
     vscode.window.registerTreeDataProvider('arccluster', arcClusterProvider);
 
     const localClusterProvider = new LocalClustersProvider();
@@ -94,13 +94,21 @@ export async function activate(context: vscode.ExtensionContext)
         await arcClusterProvider.rebuildClustersInfo();
     }));
 
+    context.subscriptions.push(vscode.commands.registerCommand(
+        'azurearc.disconnectFromArc',
+        async (cluster: ArcClusterViewItem) => await disconnectFromArc(cluster)));
+
+    context.subscriptions.push(vscode.commands.registerCommand('azurearc.createLocalClusters', async () => {
+        createLocalCluster();
+    }));
+
     context.subscriptions.push(vscode.commands.registerCommand('azurearc.refreshLocalClusters', async () => {
         await localClusterProvider.refresh();
     }));
 
-    context.subscriptions.push(vscode.commands.registerCommand('azurearc.connectToArc', async (cluster: LocalCluster) => {
-        await localClusterProvider.connectToArc(cluster);
-    }));
+    context.subscriptions.push(vscode.commands.registerCommand(
+        'azurearc.connectToArc',
+        async (cluster: LocalCluster) => await connectToArc(cluster)));
 
     context.subscriptions.push(vscode.commands.registerCommand('azurearc.build2Deploy', async (selected) => {
         const dockerCmds = await getDockerCmds(selected?.fsPath);

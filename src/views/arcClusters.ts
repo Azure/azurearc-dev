@@ -5,6 +5,8 @@ import { reportProgress } from '../common';
 const askSubRgContextName = 'askSubRg';
 const askAzLoginContextName = 'askAzLogin';
 
+const subRgSelectionKeyName = "subRgSelection";
+
 enum ClusterViewStatus
 {
     notLoggedIn,
@@ -19,8 +21,12 @@ class ArcClustersInfo
     readonly provisionedClustersResourceType = 'Microsoft.HybridContainerService/provisionedClusters';
 
     private subItems: SubscriptionItem[] = [];
+    private context?: vscode.ExtensionContext;
 
-    constructor() {}
+    constructor(context?: vscode.ExtensionContext)
+    {
+        this.context = context;
+    }
 
     getSubItems(): SubscriptionItem[]
     {
@@ -91,6 +97,16 @@ class ArcClustersInfo
                 else
                 {
                     currProg = reportProgress(progress, currProg, loginProgress);
+                    const subRgSelection = this.getSubRgSelection();
+
+                    if ((this.subItems.length === 0 || this.subItems.every(_ => _.resourceGroups.length === 0)) &&
+                        subRgSelection !== undefined &&
+                        Object.keys(subRgSelection).length > 0)
+                    {
+                        this.subItems = await buildSubscriptionItems(false, subRgSelection);
+                        loadArmResource = true;
+                    }
+
                     const inc = (loadArmResourcesProgress - loginProgress) / this.subItems.length;
                     if (loadArmResource && this.subItems.length > 0)
                     {
@@ -125,15 +141,29 @@ class ArcClustersInfo
     }
 
     // Prompt users to make new sub/rg selection and refresh
-    async selectSubRg()
+    async selectSubRg(context?: vscode.ExtensionContext)
     {
-        const newSubItems = await buildSubscriptionItems();
+        const subRgSelection = this.getSubRgSelection();
+        const newSubItems = await buildSubscriptionItems(true, subRgSelection);
 
         if (newSubItems.length > 0)
         {
             this.subItems = newSubItems;
-            await this.refreshClusters();
+            if (context !== undefined)
+            {
+                const subRgSelection: { [key: string]: string[] } = {};
+                this.subItems.forEach(subItem => {
+                    subRgSelection![subItem.subscription.subscriptionId!] = subItem.resourceGroups.map(rg => rg.label);
+                });
+
+                context?.workspaceState.update(subRgSelectionKeyName, subRgSelection);
+            }
         }
+    }
+
+    getSubRgSelection()
+    {
+        return this.context?.workspaceState.get<{ [key: string]: string[] }>(subRgSelectionKeyName);
     }
 }
 
@@ -141,17 +171,22 @@ export class ArcClustersProvider implements vscode.TreeDataProvider<ArcClusterVi
 {
     private _onDidChangeTreeData: vscode.EventEmitter<ArcClusterViewItemBase | undefined | void> =
         new vscode.EventEmitter<ArcClusterViewItemBase | undefined | void>();
-    private clustersInfo: ArcClustersInfo = new ArcClustersInfo();
+    private clustersInfo: ArcClustersInfo;
+    private context?: vscode.ExtensionContext;
 
     readonly onDidChangeTreeData: vscode.Event<ArcClusterViewItemBase | undefined | void> =
         this._onDidChangeTreeData.event;
 
-    constructor() {}
+    constructor(context?: vscode.ExtensionContext)
+    {
+        this.context = context;
+        this.clustersInfo = new ArcClustersInfo(this.context);
+    }
 
     // Rebuild cluster info with a new sub/rg selection
     async rebuildClustersInfo()
     {
-        await this.clustersInfo.selectSubRg();
+        await this.clustersInfo.selectSubRg(this.context);
         await this.refresh();
     }
 
@@ -184,7 +219,7 @@ export class ArcClustersProvider implements vscode.TreeDataProvider<ArcClusterVi
                 sub?.resourceGroups.forEach(rg =>
                 {
                     children.push(new ResourceGroupViewItem(
-                        rg.label, vscode.TreeItemCollapsibleState.Expanded, sub.label));
+                        rg.label, vscode.TreeItemCollapsibleState.Expanded, sub.label, rg.resourceGroup.location));
                 });
             }
             else if (element instanceof ResourceGroupViewItem)
@@ -200,12 +235,17 @@ export class ArcClustersProvider implements vscode.TreeDataProvider<ArcClusterVi
         }
         else
         {
-            children.push(...subItems.map(_ => 
-                new SubscriptionViewItem(_.label, vscode.TreeItemCollapsibleState.Expanded)));
+            children.push(...subItems.map(_ => new SubscriptionViewItem(
+                _.label, vscode.TreeItemCollapsibleState.Expanded, _.subscription.subscriptionId)));
         }
 
         return children;
     }
+}
+
+export function disconnectFromArc(cluster: ArcClusterViewItem)
+{
+    vscode.window.showInformationMessage(`TODO: Disconnected ${cluster.label} from Azure Arc.`);
 }
 
 abstract class ArcClusterViewItemBase extends vscode.TreeItem
@@ -223,9 +263,11 @@ class SubscriptionViewItem extends ArcClusterViewItemBase
 {
     constructor(
         public readonly label: string,
-        public readonly collapsibleState: vscode.TreeItemCollapsibleState)
+        public readonly collapsibleState: vscode.TreeItemCollapsibleState,
+        public readonly description?: string)
     {
         super(label, collapsibleState);
+        this.description = description;
     }
 }
 
@@ -234,14 +276,16 @@ class ResourceGroupViewItem extends ArcClusterViewItemBase
     constructor(
         public readonly label: string,
         public readonly collapsibleState: vscode.TreeItemCollapsibleState,
-        public readonly subscriptionName: string)
+        public readonly subscriptionName: string,
+        public readonly description?: string)
     {
         super(label, collapsibleState);
         this.subscriptionName = subscriptionName;
+        this.description = description;
     }
 }
 
-class ArcClusterViewItem extends ArcClusterViewItemBase
+export class ArcClusterViewItem extends ArcClusterViewItemBase
 {
     constructor(
         public readonly label: string,

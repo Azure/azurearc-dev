@@ -1,17 +1,15 @@
 import * as vscode from 'vscode';
-import * as fs from 'fs';
-import * as path from 'path';
-import axios from 'axios';
 import * as common from './common';
 import { provisionK8S } from './k8s';
 import { generateDependencyBicep } from './bicep';
 import { validateHelm } from './helm';
+import { SampleTypes, selectSample } from './samples';
 
 export const arcExtCmdOptions: common.ArcExtOption[] =
 [
     new common.ArcExtOption(
         'Start with a sample',
-        selectSample,
+        selectSampleType,
         '',
         'Check out what Arc-enabled services can do from a list of samples.'
     ),
@@ -83,40 +81,28 @@ export async function showArcExtCmdQuickpick(context?: vscode.ExtensionContext)
         arcExtCmdOptions, 'Arc Extension Commands', 'Select a command', true, context);
 }
 
-export async function selectSample()
+export async function selectSampleType()
 {
-    // petw: use this url when release
-    // const url = "https://raw.githubusercontent.com/Azure/azurearc-dev/main/src/templates.json";
-    const url = "https://petwsa.blob.core.windows.net/vscext/templates.json";
-    const response = await axios.get(url);
-    const templates = response.data as { name: string, description: string, repositoryPath: string }[];
-    const options = templates.map(t => {
-        return {
-            label: t.name,
-            detail: t.description,
-            data: t.repositoryPath,
-            action: async context => {
-                var dir = await common.openFileDialog(false, true, false, "Select Sample Working Directory");
+    const sampleAppLabel = 'Sample applications';
+    const jumpstartLabel = 'Jumpstart applications';
 
-                if (dir === undefined)
-                {
-                    return;
-                }
+    const sampleTypes: common.ArcExtOption[] =
+    [
+        new common.ArcExtOption(
+            sampleAppLabel, async () => {}, '', 'Arc application and Arc extension samples.'
+        ),
+        new common.ArcExtOption(
+            jumpstartLabel, async () => {}, '', 'Jumpstart samples.'
+        )
+    ];
 
-                const dest = path.join(dir, t.repositoryPath!);
-                if (fs.existsSync(path.join(dest, 'azure.yaml')))
-                {
-                    // Repo already exists, open directory.
-                    await vscode.commands.executeCommand('vscode.openFolder', vscode.Uri.file(`${dest}`));
-                }
-                else
-                {
-                    await vscode.commands.executeCommand(
-                        'git.clone', `https://github.com/Azure-Samples/${t.repositoryPath}`, dir);
-                }
-            }
-        } as common.ArcExtOption;
-    });
+    const selection = await showSingularChoiceQuickpick(
+        sampleTypes, "Select a sample type", "Select a type", false);
+    if (selection === undefined)
+    {
+        return;
+    }
 
-    await showSingularChoiceQuickpick(options, 'Arc Extension Samples', 'Select a sample');
+    const type = selection.label === sampleAppLabel ? SampleTypes.arcApp : SampleTypes.jumpstart;
+    await selectSample(type);
 }

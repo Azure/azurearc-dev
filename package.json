@@ -4,7 +4,7 @@
   "publisher": "peterwu",
   "displayName": "Azure Arc",
   "description": "Azure Arc",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "engines": {
     "vscode": "^1.78.0"
   },
@@ -42,13 +42,23 @@
       },
       {
         "command": "azurearc.rebuildSubItems",
-        "title": "Edit",
+        "title": "Edit Selection",
         "icon": "$(edit)"
       },
       {
         "command": "azurearc.connectToArc",
         "title": "Connect To Arc",
         "icon": "$(cloud-upload)"
+      },
+      {
+        "command": "azurearc.disconnectFromArc",
+        "title": "Disconnect from Arc",
+        "icon": "$(trash)"
+      },
+      {
+        "command": "azurearc.createLocalClusters",
+        "title": "Create local clusters",
+        "icon": "$(add)"
       },
       {
         "command": "azurearc.refreshLocalClusters",
@@ -76,12 +86,26 @@
           "group": "navigation"
         },
         {
+            "command": "azurearc.createLocalClusters",
+            "when": "view == localcluster",
+            "group": "navigation"
+        },
+        {
           "command": "azurearc.refreshLocalClusters",
           "when": "view == localcluster",
           "group": "navigation"
         }
       ],
       "view/item/context": [
+        {
+            "command": "azurearc.disconnectFromArc",
+            "when": "view == arccluster && viewItem == arcclusterItem",
+            "group": "inline"
+        },
+        {
+            "command": "azurearc.disconnectFromArc",
+            "when": "view == arccluster && viewItem == arcclusterItem"
+        },
         {
           "command": "azurearc.connectToArc",
           "when": "view == localcluster && viewItem == canConnect",

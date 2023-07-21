@@ -10,7 +10,7 @@ suite('Extension Test Suite', () => {
     test('Test UI element invocation', async () => {
         // Quick picks
         await quickpicks.showArcExtCmdQuickpick();
-        await quickpicks.selectSample();
+        await quickpicks.selectSampleType();
         await provisionK8S();
         await generateDependencyBicep();
 
