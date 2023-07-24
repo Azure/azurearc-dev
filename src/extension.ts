@@ -1,12 +1,15 @@
 import * as vscode from 'vscode';
 import { v4 as uuidv4 } from 'uuid';
-import { HelpProvider } from './help';
+import { HelpProvider } from './views/help';
 import { showArcExtCmdQuickpick } from './quickpicks';
 import path = require('path');
-import { CloudGPTViewProvider } from './cloudGpt';
+import { CloudGPTViewProvider } from './views/cloudGpt';
 import { getDockerCmds as getDockerCmds, getKubectlCmd } from './buildAndDeploy';
 import { outputChannel, validateHelm } from './helm';
 import { TelemetryEvent, configureTelemetryReporter, sendTelemetryEvent } from './telemetry';
+import { azureAccountProvider, isLoggedIn } from './utils/azure';
+import { ArcClustersProvider } from './views/arcClusters';
+import { LocalCluster, LocalClustersProvider } from './views/localClusters';
 
 const instanceId = uuidv4();
 
@@ -20,10 +23,20 @@ export async function activate(context: vscode.ExtensionContext)
     const helpprovider = new HelpProvider();
     vscode.window.registerTreeDataProvider('helpandfeedback', helpprovider);
 
+    const arcClusterProvider = new ArcClustersProvider();
+    vscode.window.registerTreeDataProvider('arccluster', arcClusterProvider);
+
+    const localClusterProvider = new LocalClustersProvider();
+    vscode.window.registerTreeDataProvider('localcluster', localClusterProvider);
+
     const provider = new CloudGPTViewProvider(context.extensionUri);
     context.subscriptions.push(vscode.window.registerWebviewViewProvider(
         CloudGPTViewProvider.viewType, provider,  { webviewOptions: { retainContextWhenHidden: true } })
     );
+
+    context.subscriptions.push(azureAccountProvider.onSessionsChanged(() => {
+        arcClusterProvider.refresh();
+    }));
 
     context.subscriptions.push(vscode.workspace.onDidChangeConfiguration(event => {
         if (event.affectsConfiguration('telemetry.telemetryLevel'))
@@ -71,6 +84,22 @@ export async function activate(context: vscode.ExtensionContext)
 
     context.subscriptions.push(vscode.commands.registerCommand('azurearc.validateHelm', async () => {
         await validateHelm();
+    }));
+
+    context.subscriptions.push(vscode.commands.registerCommand('azurearc.refreshArcClusters', async () => {
+        await arcClusterProvider.refresh();
+    }));
+
+    context.subscriptions.push(vscode.commands.registerCommand('azurearc.rebuildSubItems', async () => {
+        await arcClusterProvider.rebuildClustersInfo();
+    }));
+
+    context.subscriptions.push(vscode.commands.registerCommand('azurearc.refreshLocalClusters', async () => {
+        await localClusterProvider.refresh();
+    }));
+
+    context.subscriptions.push(vscode.commands.registerCommand('azurearc.connectToArc', async (cluster: LocalCluster) => {
+        await localClusterProvider.connectToArc(cluster);
     }));
 
     context.subscriptions.push(vscode.commands.registerCommand('azurearc.build2Deploy', async (selected) => {
