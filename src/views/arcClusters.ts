@@ -1,5 +1,4 @@
 import * as vscode from 'vscode';
-import * as path from 'path';
 import { SubscriptionItem, buildSubscriptionItems, isLoggedIn } from '../utils/azure';
 
 const askSubRgContextName = 'askSubRg';
@@ -67,50 +66,71 @@ class ArcClustersInfo
     // Refresh local kubeconfig and subscription items with the current sub/rg selection
     async refreshClusters(loadArmResource: boolean = true)
     {
-        var status = ClusterViewStatus.ok;
-        try
-        {
-            // Arc clusters
-            const loggedIn = await isLoggedIn();
-            if (!loggedIn)
+        return await vscode.window.withProgress({
+            location: { viewId: 'arccluster' },
+            title: 'Reloading Arc clusters...'
+        }, async (progress, token) => {
+            progress.report({ increment: 0 });
+            var status = ClusterViewStatus.ok;
+            try
             {
-                this.subItems = [];
-                status = ClusterViewStatus.notLoggedIn;
-            }
-            else
-            {
-                if (loadArmResource)
+                // Arc clusters
+                const loggedIn = await isLoggedIn();
+                if (!loggedIn)
                 {
-                    for (const sub of this.subItems)
-                    {
-                        await sub.loadResources(
-                            [this.connectedClustersResourceType, this.provisionedClustersResourceType]);
-                    }
-                }
-
-                if (!this.hasSubRgSelection())
-                {
-                    status = ClusterViewStatus.noSubRgSelection;
+                    this.subItems = [];
+                    status = ClusterViewStatus.notLoggedIn;
+                    progress.report({ increment: 90 });
                 }
                 else
                 {
-                    const resourceCount = this.getResourceCount();
-                    status = (resourceCount === undefined || resourceCount === 0) ?
-                        ClusterViewStatus.noArcClusters : ClusterViewStatus.ok;
+                    progress.report({ increment: 20 });
+                    if (loadArmResource && this.subItems.length > 0)
+                    {
+                        const inc = (90 - 30) / this.subItems.length;
+                        for (const sub of this.subItems)
+                        {
+                            await sub.loadResources(
+                                [this.connectedClustersResourceType, this.provisionedClustersResourceType]);
+                            progress.report({ increment: inc });
+                            await new Promise((resolve) => setTimeout(resolve, 200));
+                        }
+                    }
+                    else
+                    {
+                        progress.report({ increment: 90 });
+                    }
+
+                    if (!this.hasSubRgSelection())
+                    {
+                        status = ClusterViewStatus.noSubRgSelection;
+                    }
+                    else
+                    {
+                        const resourceCount = this.getResourceCount();
+                        status = (resourceCount === undefined || resourceCount === 0) ?
+                            ClusterViewStatus.noArcClusters : ClusterViewStatus.ok;
+                    }
                 }
             }
-        }
-        finally
-        {
-            await this.setWelcomViewVisibility(status);
-        }
+            finally
+            {
+                await this.setWelcomViewVisibility(status);
+                progress.report({ increment: 10 });
+            }
+        });
     }
 
     // Prompt users to make new sub/rg selection and refresh
     async selectSubRg()
     {
-        this.subItems = await buildSubscriptionItems();
-        await this.refreshClusters();
+        const newSubItems = await buildSubscriptionItems();
+
+        if (newSubItems.length > 0)
+        {
+            this.subItems = newSubItems;
+            await this.refreshClusters();
+        }
     }
 }
 

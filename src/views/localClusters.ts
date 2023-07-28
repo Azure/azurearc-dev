@@ -25,52 +25,80 @@ export class LocalClustersProvider implements vscode.TreeDataProvider<LocalClust
 
     async getChildren(element?: LocalCluster): Promise<LocalCluster[]>
     {
-        this.kubeconfig.loadFromDefault();
-        const clusters = this.kubeconfig.getClusters();
-        if (clusters === undefined || clusters.length === 0)
-        {
-            return [];
-        }
+        return await vscode.window.withProgress({
+            location: { viewId: 'localcluster' },
+            title: 'Refreshing local K8S clusters...'
+        }, async (progress, token) => {
+            progress.report({ increment: 0 });
+            this.kubeconfig.loadFromDefault();
 
-        // Check cluster compatibility
-        const children: LocalCluster[] = [];
-        const currentContext = this.kubeconfig.getCurrentContext();
-        try
-        {
-            for (const cluster of clusters)
+            const kubeconfigLoadProcessInc = 10;
+            progress.report({ increment: kubeconfigLoadProcessInc });
+            const contexts = this.kubeconfig.getContexts();
+            if (contexts === undefined || contexts.length === 0)
             {
-                var isCompatible = false;
-                try
+                return [];
+            }
+
+            // Check cluster compatibility
+            const children: LocalCluster[] = [];
+            const currentContext = this.kubeconfig.getCurrentContext();
+
+            const ctxLoadProgressInc = (90 - kubeconfigLoadProcessInc) / contexts.length;
+            try
+            {
+                for (const ctx of contexts)
                 {
-                    this.kubeconfig.setCurrentContext(cluster.name);
-                    const k8sApi = this.kubeconfig.makeApiClient(CoreV1Api);
-                    await k8sApi.listNode().then((res) =>
+                    var isCompliant = false;
+                    try
                     {
-                        isCompatible = res?.body?.items?.every(_ => _.spec?.providerID?.startsWith('azure'));
-                    });
-                }
-                catch (error)
-                {
-                    // Ignore error
-                }
-                finally
-                {
-                    children.push(
-                        new LocalCluster(cluster.name, vscode.TreeItemCollapsibleState.None, isCompatible));
+                        this.kubeconfig.setCurrentContext(ctx.name);
+                        const k8sApi = this.kubeconfig.makeApiClient(CoreV1Api);
+                        isCompliant = await this.isNativeClusterCompliant(k8sApi);
+                    }
+                    catch (error)
+                    {
+                        console.log(error);
+                    }
+                    finally
+                    {
+                        children.push(
+                            new LocalCluster(ctx.name, vscode.TreeItemCollapsibleState.None, isCompliant));
+                        progress.report({ increment: ctxLoadProgressInc });
+                    }
                 }
             }
-        }
-        finally
-        {
-            this.kubeconfig.setCurrentContext(currentContext);
-        }
+            finally
+            {
+                this.kubeconfig.setCurrentContext(currentContext);
+            }
 
-        return children;
+            progress.report({ increment: 10 });
+            await new Promise((resolve) => setTimeout(resolve, 300));
+            return children;
+        });
     }
 
     connectToArc(cluster: LocalCluster)
     {
         vscode.window.showInformationMessage(`TODO: Connected ${cluster.label} to Azure Arc.`);
+    }
+
+    private async isNativeClusterCompliant(k8sApi: CoreV1Api): Promise<boolean>
+    {
+        var isAks = false;
+        var isAksEe = false;
+        return await k8sApi.listNode().then((res) =>
+        {
+            // AKS nodes have a providerID that starts with 'azure://'
+            isAks = res?.body?.items?.every(_ => _.spec?.providerID?.startsWith('azure'));
+
+            // AKS EE nodes has an annotation with its distro
+            isAksEe = res?.body?.items?.every(_ =>
+                _.metadata?.annotations?.['node.aksedge.io/distro']?.startsWith('aks_edge'));
+
+            return isAks || isAksEe;
+        });
     }
 }
 

@@ -121,25 +121,52 @@ export async function ensureLoggedIn()
 
 export async function buildSubscriptionItems(): Promise<SubscriptionItem[]>
 {
-    ensureLoggedIn();
+    return await vscode.window.withProgress({
+        location: { viewId: 'arccluster' },
+        title: 'Selecting subscriptions and resource groups...'
+    }, async (progress, token) => {
+        progress.report({ increment: 0 });
+        ensureLoggedIn();
 
-    const subscriptionItems = await loadSubscriptionItems();
-    const selectedSubs = await showMultipleChoiceQuickpick(
-        subscriptionItems, 'Select subscriptions', 'Select subscriptions', false);
+        progress.report({ increment: 20 });
+        const subscriptionItems = await loadSubscriptionItems();
 
-    var subItems: SubscriptionItem[] = [];
-    for (const sub of selectedSubs as SubscriptionItem[])
-    {
-        const rgItems = await loadResourceGroupItems(sub);
-        const selectedRgs = await showMultipleChoiceQuickpick(
-            rgItems, `Select Resource Groups from '${sub.label}'`, 'Select Resource Groups', false);
+        progress.report({ increment: 20 });
+        const selectedSubs = await showMultipleChoiceQuickpick(
+            subscriptionItems, 'Select subscriptions', 'Select subscriptions', false);
 
-        sub.resourceGroups = [];
-        sub.resourceGroups.push(...selectedRgs as ResourceGroupItem[]);
-        subItems.push(sub);
-    };
+        if (selectedSubs === undefined || selectedSubs.length === 0)
+        {
+            return [];
+        }
 
-    return subItems;
+        var subItems: SubscriptionItem[] = [];
+        const rgSelectionProgressInc = (90 - 40) / selectedSubs.length;
+        for (const sub of selectedSubs as SubscriptionItem[])
+        {
+            const rgItems = await loadResourceGroupItems(sub);
+            if (rgItems.length === 0)
+            {
+                continue;
+            }
+
+            const selectedRgs = await showMultipleChoiceQuickpick(
+                rgItems, `Select Resource Groups from '${sub.label}'`, 'Select Resource Groups', false);
+
+            if (selectedRgs === undefined || selectedRgs.length === 0)
+            {
+                continue;
+            }
+
+            sub.resourceGroups = [];
+            sub.resourceGroups.push(...selectedRgs as ResourceGroupItem[]);
+            subItems.push(sub);
+            progress.report({ increment: rgSelectionProgressInc });
+        };
+
+        progress.report({ increment: 10 });
+        return subItems;
+    });
 }
 
 export async function loadSubscriptionItems() : Promise<SubscriptionItem[]>
@@ -148,21 +175,35 @@ export async function loadSubscriptionItems() : Promise<SubscriptionItem[]>
     const subscriptionItems: SubscriptionItem[] = [];
     for (const session of azureAccountApi.sessions)
     {
-        const credentials = session.credentials2;
-        const subscriptionClient = new SubscriptionClient(credentials);
-        const subscriptions = await listAll(
-            subscriptionClient.subscriptions, subscriptionClient.subscriptions.list());
-        subscriptionItems.push(...subscriptions.map(subscription => 
-            new SubscriptionItem(
-                subscription.displayName || '',
-                async () => {},
-                subscription.subscriptionId || '',
-                session,
-                subscription,
-                [])));
+        const subscriptionClient = new SubscriptionClient(session.credentials2);
+        console.log(`Sub client created for '${session.userId}, ${session.environment}'.`);
+
+        try
+        {
+            const subscriptions = await subscriptionClient.subscriptions.list();
+
+            // const subscriptions = await listAll(
+            //     subscriptionClient.subscriptions, subscriptionClient.subscriptions.list());
+
+            console.log(`Sub listed.`);
+            subscriptionItems.push(...subscriptions.map(subscription => 
+                new SubscriptionItem(
+                    subscription.displayName || '',
+                    async () => {},
+                    subscription.subscriptionId || '',
+                    session,
+                    subscription,
+                    [])));
+        }
+        catch (error)
+        {
+            console.log(`Error listing subscriptions for '${session.userId}': ${error}`);
+        }
     }
 
     subscriptionItems.sort((a, b) => a.label.localeCompare(b.label));
+
+    console.log('Subscriptions loaded.');
     return subscriptionItems;
 }
 
@@ -192,7 +233,7 @@ async function listAll<T>(
 {
     const all: T[] = [];
     for (let list = await first;
-        list.length || list.nextLink;
+        list !== undefined && (list.length || list.nextLink);
         list = list.nextLink ? await client.listNext(list.nextLink) : [])
     {
         all.push(...list);

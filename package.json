@@ -106,15 +106,15 @@
       "arc-extension": [
         {
           "id": "arccluster",
-          "name": "Arc Clusters",
+          "name": "Arc-connected Clusters",
           "icon": "$(azure)",
           "contextualTitle": "Arc Clusters"
         },
         {
           "id": "localcluster",
-          "name": "Local Clusters",
+          "name": "Native K8S",
           "icon": "$(azure)",
-          "contextualTitle": "Local Clusters"
+          "contextualTitle": "Native Clusters"
         },
         {
           "type": "webview",
@@ -239,7 +239,6 @@
   },
   "extensionDependencies": [
     "ms-azuretools.azure-dev",
-    "ms-kubernetes-tools.aks-devx-tools",
     "ms-vscode.azure-account"
   ],
   "dependencies": {
