@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { KubeConfig, CoreV1Api } from '@kubernetes/client-node';
+import { reportProgress } from '../common';
 
 const k8s = require('@kubernetes/client-node');
 
@@ -29,11 +30,15 @@ export class LocalClustersProvider implements vscode.TreeDataProvider<LocalClust
             location: { viewId: 'localcluster' },
             title: 'Refreshing local K8S clusters...'
         }, async (progress, token) => {
-            progress.report({ increment: 0 });
+            const startProgress = 0;
+            const kubeCfgLoadProgress = 10;
+            const kubeCtxLoadProgress = 90;
+            const completeProgress = 100;
+
+            var currProg = reportProgress(progress, startProgress, startProgress);
             this.kubeconfig.loadFromDefault();
 
-            const kubeconfigLoadProcessInc = 10;
-            progress.report({ increment: kubeconfigLoadProcessInc });
+            currProg = reportProgress(progress, currProg, kubeCfgLoadProgress);
             const contexts = this.kubeconfig.getContexts();
             if (contexts === undefined || contexts.length === 0)
             {
@@ -44,7 +49,7 @@ export class LocalClustersProvider implements vscode.TreeDataProvider<LocalClust
             const children: LocalCluster[] = [];
             const currentContext = this.kubeconfig.getCurrentContext();
 
-            const ctxLoadProgressInc = (90 - kubeconfigLoadProcessInc) / contexts.length;
+            const ctxLoadProgressInc = (kubeCtxLoadProgress - kubeCfgLoadProgress) / contexts.length;
             try
             {
                 for (const ctx of contexts)
@@ -64,17 +69,17 @@ export class LocalClustersProvider implements vscode.TreeDataProvider<LocalClust
                     {
                         children.push(
                             new LocalCluster(ctx.name, vscode.TreeItemCollapsibleState.None, isCompliant));
-                        progress.report({ increment: ctxLoadProgressInc });
+                            currProg = reportProgress(progress, currProg, currProg + ctxLoadProgressInc);
                     }
                 }
             }
             finally
             {
                 this.kubeconfig.setCurrentContext(currentContext);
+                currProg = reportProgress(progress, currProg, kubeCtxLoadProgress);
             }
 
-            progress.report({ increment: 10 });
-            await new Promise((resolve) => setTimeout(resolve, 300));
+            currProg = reportProgress(progress, currProg, completeProgress);
             return children;
         });
     }

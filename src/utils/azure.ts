@@ -4,7 +4,7 @@ import { SubscriptionClient, SubscriptionModels } from '@azure/arm-subscriptions
 import { apiUtils } from '@microsoft/vscode-azext-utils';
 import { AzureAccountExtensionApi, AzureSession } from '../external/azure-account.api';
 import { GenericResourceExpanded, ResourceGroup } from '@azure/arm-resources/esm/models';
-import { ArcExtOption } from '../common';
+import { ArcExtOption, reportProgress } from '../common';
 import { showMultipleChoiceQuickpick } from '../quickpicks';
 
 export class ResourceGroupItem implements ArcExtOption
@@ -125,13 +125,19 @@ export async function buildSubscriptionItems(): Promise<SubscriptionItem[]>
         location: { viewId: 'arccluster' },
         title: 'Selecting subscriptions and resource groups...'
     }, async (progress, token) => {
-        progress.report({ increment: 0 });
+        const startProgress = 0;
+        const loginProgress = 20;
+        const loadSubProgress = 40;
+        const loadRgProgress = 90;
+        const completeProgress = 100;
+
+        var currProg = reportProgress(progress, startProgress, startProgress);
         ensureLoggedIn();
 
-        progress.report({ increment: 20 });
+        currProg = reportProgress(progress, currProg, loginProgress);
         const subscriptionItems = await loadSubscriptionItems();
 
-        progress.report({ increment: 20 });
+        currProg = reportProgress(progress, currProg, loadSubProgress);
         const selectedSubs = await showMultipleChoiceQuickpick(
             subscriptionItems, 'Select subscriptions', 'Select subscriptions', false);
 
@@ -141,7 +147,7 @@ export async function buildSubscriptionItems(): Promise<SubscriptionItem[]>
         }
 
         var subItems: SubscriptionItem[] = [];
-        const rgSelectionProgressInc = (90 - 40) / selectedSubs.length;
+        const rgSelectionProgressInc = (loadRgProgress - loadSubProgress) / selectedSubs.length;
         for (const sub of selectedSubs as SubscriptionItem[])
         {
             const rgItems = await loadResourceGroupItems(sub);
@@ -161,10 +167,10 @@ export async function buildSubscriptionItems(): Promise<SubscriptionItem[]>
             sub.resourceGroups = [];
             sub.resourceGroups.push(...selectedRgs as ResourceGroupItem[]);
             subItems.push(sub);
-            progress.report({ increment: rgSelectionProgressInc });
+            currProg = reportProgress(progress, currProg, currProg + rgSelectionProgressInc);
         };
 
-        progress.report({ increment: 10 });
+        currProg = reportProgress(progress, currProg, completeProgress);
         return subItems;
     });
 }
