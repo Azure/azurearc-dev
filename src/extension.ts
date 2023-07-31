@@ -4,7 +4,7 @@ import { HelpProvider } from './views/help';
 import { showArcExtCmdQuickpick } from './quickpicks';
 import path = require('path');
 import { CloudGPTViewProvider } from './views/cloudGpt';
-import { getDockerCmds as getDockerCmds, getKubectlCmd } from './buildAndDeploy';
+import { getDockerCmds as getDockerCmds, getHelmCmd } from './buildAndDeploy';
 import { outputChannel, validateHelm } from './helm';
 import { TelemetryEvent, configureTelemetryReporter, sendTelemetryEvent } from './telemetry';
 import { azureAccountProvider, isLoggedIn } from './utils/azure';
@@ -109,8 +109,8 @@ export async function activate(context: vscode.ExtensionContext)
             return;
         }
 
-        const kubectlCmd = await getKubectlCmd();
-        if (kubectlCmd === undefined)
+        const helmCmd = await getHelmCmd();
+        if (helmCmd === undefined)
         {
             return;
         }
@@ -127,7 +127,7 @@ export async function activate(context: vscode.ExtensionContext)
 
         t.show(true);
         dockerCmds.forEach(cmd => t.sendText(cmd));
-        t.sendText(kubectlCmd);
+        t.sendText(helmCmd);
     }));
 }
 

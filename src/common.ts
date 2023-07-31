@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import * as path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import { showSingularChoiceQuickpick } from './quickpicks';
 
@@ -127,4 +128,20 @@ export function reportProgress(
 
     progress.report({ increment: targetProgress - currentProgress, message: message });
     return targetProgress;
+}
+
+
+export async function getChartRepo(context?: vscode.ExtensionContext)
+{
+    const ymlFiles = await vscode.workspace.findFiles("**/*Chart.yaml");
+    const options = ymlFiles.map(_ => {
+        return { label: path.dirname(_.fsPath)  } as ArcExtOption;
+    });
+    const selection = await showSingularChoiceQuickpick(
+        options, 'Chart Repo Location', 'Select a Chart Repo (with Chart.yaml)', false);
+    if (selection === undefined)
+    {
+        return;
+    }
+    return selection!.label;
 }
