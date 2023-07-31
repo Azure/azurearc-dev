@@ -138,7 +138,7 @@ export async function getChartRepo(context?: vscode.ExtensionContext)
         return { label: path.dirname(_.fsPath)  } as ArcExtOption;
     });
     const selection = await showSingularChoiceQuickpick(
-        options, 'Chart Repo Location', 'Select a Chart Repo', false);
+        options, 'Chart Repo Location', 'Select a Chart Repo (with Chart.yaml)', false);
     if (selection === undefined)
     {
         return;
