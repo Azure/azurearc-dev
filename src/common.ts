@@ -1,12 +1,11 @@
 import * as vscode from 'vscode';
+import * as path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import { showSingularChoiceQuickpick } from './quickpicks';
 
 export const outputChannelName = "Azure Arc";
 
-const path = require('path');
 const imageNameKeyName = "imgName";
-const chatRepoKeyName = "helmRepo";
 
 export class ArcExtOption implements vscode.QuickPickItem
 {
@@ -134,11 +133,6 @@ export function reportProgress(
 
 export async function getChartRepo(context?: vscode.ExtensionContext)
 {
-    if (vscode.workspace.workspaceFolders === undefined)
-    {
-        return;
-    }
-    const workspace = vscode.workspace.workspaceFolders[0].uri.fsPath;
     const ymlFiles = await vscode.workspace.findFiles("**/*Chart.yaml");
     const options = ymlFiles.map(_ => {
         return { label: path.dirname(_.fsPath)  } as ArcExtOption;
