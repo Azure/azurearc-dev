@@ -212,8 +212,7 @@ abstract class ArcClusterViewItemBase extends vscode.TreeItem
 {
     constructor(
         public readonly label: string,
-        public readonly collapsibleState: vscode.TreeItemCollapsibleState,
-        public readonly command?: vscode.Command)
+        public readonly collapsibleState: vscode.TreeItemCollapsibleState)
     {
         super(label, collapsibleState);
         this.tooltip = this.label;
@@ -224,10 +223,9 @@ class SubscriptionViewItem extends ArcClusterViewItemBase
 {
     constructor(
         public readonly label: string,
-        public readonly collapsibleState: vscode.TreeItemCollapsibleState,
-        public readonly command?: vscode.Command)
+        public readonly collapsibleState: vscode.TreeItemCollapsibleState)
     {
-        super(label, collapsibleState, command);
+        super(label, collapsibleState);
     }
 }
 
@@ -236,10 +234,9 @@ class ResourceGroupViewItem extends ArcClusterViewItemBase
     constructor(
         public readonly label: string,
         public readonly collapsibleState: vscode.TreeItemCollapsibleState,
-        public readonly subscriptionName: string,
-        public readonly command?: vscode.Command)
+        public readonly subscriptionName: string)
     {
-        super(label, collapsibleState, command);
+        super(label, collapsibleState);
         this.subscriptionName = subscriptionName;
     }
 }
@@ -250,10 +247,9 @@ class ArcClusterViewItem extends ArcClusterViewItemBase
         public readonly label: string,
         public readonly collapsibleState: vscode.TreeItemCollapsibleState,
         public readonly subscriptionName: string,
-        public readonly resourceGroupName: string,
-        public readonly command?: vscode.Command)
+        public readonly resourceGroupName: string)
     {
-        super(label, collapsibleState, command);
+        super(label, collapsibleState);
         this.subscriptionName = subscriptionName;
         this.resourceGroupName = resourceGroupName;
     }

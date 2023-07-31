@@ -112,8 +112,7 @@ export class LocalCluster extends vscode.TreeItem
     constructor(
         public readonly label: string,
         public readonly collapsibleState: vscode.TreeItemCollapsibleState,
-        public readonly isSupported: boolean,
-        public readonly command?: vscode.Command)
+        public readonly isSupported: boolean)
     {
         super(label, collapsibleState);
 

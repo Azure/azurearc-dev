@@ -2,7 +2,7 @@
 
 This extension is designed to get you started with Arc development. You can use this extension to:
 
-- Start your first “Hello World” sample application
+- Start your first "Hello World" sample application
 - Explore Jumpstart Agora Contoso Supermarket application in your Azure environment
 - Setup your developmeent environment
 - Use in-build toolings to generate bicep templates for your application dependencies, simplify development tasks, validate your helm charts and more.
