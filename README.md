@@ -1,6 +1,13 @@
-# README
+# Arc Developer Extension
 
-This repository implements a VS Code extension to help Arc extension developers.
+This extension is designed to get you started with Arc development. You can use this extension to:
+
+- Start your first "Hello World" sample application
+- Explore Jumpstart Agora Contoso Supermarket application in your Azure environment
+- Setup your developmeent environment
+- Use in-build toolings to generate bicep templates for your application dependencies, simplify development tasks, validate your helm charts and more.
+
+We welcome feedbacks and feature requests via the issues page in GitHub repository.
 
 ## Features
 Get started with samples and create your own project based on project templates.
@@ -11,81 +18,18 @@ Provision Azure/Arc resources.
 
 ## Requirements
 
-This extension requires AZD and AKS VS code extensions.
+This extension requires AZ/AZD CLI, Azure/Azure Account VS code extensions.
 
-## Build
-The project contains a dotnet project for codegen and the extension itself. Use the build script:
+## Contributing
 
-```powershell
-.\build.ps1
-```
+This project welcomes contributions and suggestions. Most contributions require you to agree to a Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us the rights to use your contribution. For details, visit https://cla.microsoft.com.
 
-After the build is done, building VSIX package with:
+When you submit a pull request, a CLA-bot will automatically determine whether you need to provide a CLA and decorate the PR appropriately (e.g., label, comment). Simply follow the instructions provided by the bot. You will only need to do this once across all repos using our CLA.
 
-```bash
-vsce package
-```
+This project has adopted the Microsoft Open Source Code of Conduct. For more information see the Code of Conduct FAQ or contact opencode@microsoft.com with any additional questions or comments.
 
-## Debugging
-<details>
-<summary><b>Building from source with chatgpt module</b></summary>
-
-To build the extension from source, clone the repository and run `npm install` to install the dependencies. You have to change some code in `chatgpt` module because VSCode runtime does not support `fetch`. Open `node_modules/chatgpt/dist/index.js` (if not found, check `node_modules\chatgpt\build\index.js` instead) and add the following code at the top of the file:
-
-```js
-import fetch from 'node-fetch'
-```
-
-Then remove the following lines (around line 20):
-
-```js
-// src/fetch.ts
-var fetch = globalThis.fetch;
-```
-
-You also need to replace the following part near the top of the file:
-
-```js
-// src/tokenizer.ts
-import { encoding_for_model } from "@dqbd/tiktoken";
-var tokenizer = encoding_for_model("text-davinci-003");
-function encode(input) {
-  return tokenizer.encode(input);
-}
-```
-
-with
-
-```js
-// src/tokenizer.ts
-import GPT3TokenizerImport from "gpt3-tokenizer";
-var GPT3Tokenizer = typeof GPT3TokenizerImport === "function" ? GPT3TokenizerImport : GPT3TokenizerImport.default;
-var tokenizer = new GPT3Tokenizer({ type: "gpt3" });
-function encode(input) {
-  return tokenizer.encode(input).bpe;
-}
-```
-
-due to the fact that the `@dqbd/tiktoken` module is causing problems with the VSCode runtime. Delete `node_modules/@dqbd/tiktoken` directory as well. *If you know how to fix this, please let me know.*
-
-In file `node_modules/chatgpt/build/index.d.ts` (or `node_modules\chatgpt\build\index.d.ts`), change line 1 to
-
-```js
-import * as Keyv from 'keyv';
-```
-
-and line 4 to
-
-```js
-type FetchFn = any;
-```
-
-</details>
-
-
-## Extension Settings
-
-None.
+## Telemetry
+VS Code collects usage data and sends it to Microsoft to help improve our products and services. Read our [privacy statement](https://privacy.microsoft.com/en-us/privacystatement) to learn more. If you don’t wish to send usage data to Microsoft, you can set the `telemetry.enableTelemetry` setting to `false`. Learn more in our [FAQ](https://code.visualstudio.com/docs/supporting/faq#_how-to-disable-telemetry-reporting).
 
 ## Known Issues
 

@@ -40,36 +40,41 @@ export async function showSingularChoiceQuickpick(
     title: string,
     placeholder: string,
     execute: boolean = true,
-    context?: vscode.ExtensionContext)
+    context?: vscode.ExtensionContext) : Promise<common.ArcExtOption | undefined>
 {
     const quickPickOptions = {
         title: title,
         placeHolder: placeholder
     };
 
-    const quickpick = vscode.window.showQuickPick(items, quickPickOptions);
-    if (execute)
+    const selected = await vscode.window.showQuickPick(items, quickPickOptions);
+    if (execute && selected !== undefined)
     {
-        await quickpick.then(selection => (selection as common.ArcExtOption).action(context).catch(console.error));
+        await selected?.action(context).catch(console.error);
     }
 
-    return await quickpick;
+    return selected;
 }
 
 export async function showMultipleChoiceQuickpick(
     items: common.ArcExtOption[],
     title: string,
     placeholder: string,
-    context?: vscode.ExtensionContext)
+    execute: boolean = true,
+    context?: vscode.ExtensionContext) : Promise<common.ArcExtOption[] | undefined>
 {
-    await vscode.window.showQuickPick(
-        items,
-        { canPickMany: true, title: title, placeHolder: placeholder}
-    ).then(selection => {
-        if (selection) {
-            selection.forEach((_) => { _.action(); });
+    const selected = await vscode.window.showQuickPick(
+        items, { canPickMany: true, title: title, placeHolder: placeholder});
+
+    if (execute && selected !== undefined)
+    {
+        for (const item of selected)
+        {
+            await item.action(context).catch(console.error);
         }
-    });
+    }
+
+    return selected;
 }
 
 export async function showArcExtCmdQuickpick(context?: vscode.ExtensionContext)
