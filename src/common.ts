@@ -1,5 +1,11 @@
 import * as vscode from 'vscode';
+import * as path from 'path';
 import { v4 as uuidv4 } from 'uuid';
+import { showSingularChoiceQuickpick } from './quickpicks';
+
+export const outputChannelName = "Azure Arc";
+
+const imageNameKeyName = "imgName";
 
 export class ArcExtOption implements vscode.QuickPickItem
 {
@@ -28,7 +34,11 @@ export class ArcExtOption implements vscode.QuickPickItem
 }
 
 export async function openFileDialog(
-   canSelectFiles: boolean, canSelectFolders: boolean, canSelectMany: boolean, title?: string)
+    canSelectFiles: boolean,
+    canSelectFolders: boolean,
+    canSelectMany: boolean,
+    title?: string,
+    filters?: { [name: string]: string[] })
 {
     const options: vscode.OpenDialogOptions =
     {
@@ -36,6 +46,7 @@ export async function openFileDialog(
         canSelectFiles: canSelectFiles,
         canSelectFolders: canSelectFolders,
         canSelectMany: canSelectMany,
+        filters: filters
     };
   
     const result = await vscode.window.showOpenDialog(options);
@@ -65,12 +76,77 @@ export async function getNullableBoolResponseFromInputBox(prompt: string)
     return (input === undefined) ? undefined : input.toLocaleLowerCase() === 'y';
 }
 
-export async function getContainerRegistryFromInputBox()
+export async function getImageName(context?: vscode.ExtensionContext)
 {
-    const input = await vscode.window.showInputBox({
-        placeHolder: "The Uri of the Container Registry with repository",
-        prompt: "Give the Uri of the Container Registry with repository"
-    });
+    var res;
+    if (context !== undefined)
+    {
+        const imageName = context.workspaceState.get<string>(imageNameKeyName);
+        if (imageName !== undefined)
+        {
+            const options: ArcExtOption[] =
+            [
+                new ArcExtOption(
+                    `Use image name '${imageName}'`,
+                    async () => { res = imageName; }
+                ),
+                new ArcExtOption(
+                    'Use another image name',
+                    async () => { res = undefined; }
+                )
+            ];
 
-    return (input === undefined) ? undefined : input.toLocaleLowerCase();
+            await showSingularChoiceQuickpick(
+                options, 'Select resource definition based dir', 'Base dir where bicep files will be generated');
+        }
+    }
+
+    if (res === undefined)
+    {
+        res = await vscode.window.showInputBox({
+            placeHolder: "The image name including container registry uri",
+            prompt: "e.g., mycr.io/mytest"
+        });
+
+        if (res === undefined)
+        {
+            return;
+        }
+
+        res = res.toLocaleLowerCase();
+        context?.workspaceState.update(imageNameKeyName, res);
+    }
+
+    return res;
+}
+
+export function reportProgress(
+    progress: vscode.Progress<{ message?: string; increment?: number }>,
+    currentProgress: number,
+    targetProgress: number,
+    message?: string): number
+{
+    if (targetProgress < currentProgress)
+    {
+        return currentProgress;
+    }
+
+    progress.report({ increment: targetProgress - currentProgress, message: message });
+    return targetProgress;
+}
+
+
+export async function getChartRepo(context?: vscode.ExtensionContext)
+{
+    const ymlFiles = await vscode.workspace.findFiles("**/*Chart.yaml");
+    const options = ymlFiles.map(_ => {
+        return { label: path.dirname(_.fsPath)  } as ArcExtOption;
+    });
+    const selection = await showSingularChoiceQuickpick(
+        options, 'Chart Repo Location', 'Select a Chart Repo (with Chart.yaml)', false);
+    if (selection === undefined)
+    {
+        return;
+    }
+    return selection!.label;
 }

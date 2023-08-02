@@ -4,7 +4,7 @@
   "publisher": "peterwu",
   "displayName": "Azure Arc",
   "description": "Azure Arc",
-  "version": "0.0.4",
+  "version": "0.0.6",
   "engines": {
     "vscode": "^1.78.0"
   },
@@ -30,6 +30,30 @@
       {
         "command": "azurearc.build2Deploy",
         "title": "Arc Extension: Build to Deploy"
+      },
+      {
+        "command": "azurearc.validateHelm",
+        "title": "Arc Extension: Validate helm chart"
+      },
+      {
+        "command": "azurearc.refreshArcClusters",
+        "title": "Refresh",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "azurearc.rebuildSubItems",
+        "title": "Edit",
+        "icon": "$(edit)"
+      },
+      {
+        "command": "azurearc.connectToArc",
+        "title": "Connect To Arc",
+        "icon": "$(cloud-upload)"
+      },
+      {
+        "command": "azurearc.refreshLocalClusters",
+        "title": "Refresh",
+        "icon": "$(refresh)"
       }
     ],
     "menus": {
@@ -38,6 +62,34 @@
           "command": "azurearc.build2Deploy",
           "title": "Arc Build Image",
           "group": "3.1_azurearc"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "azurearc.refreshArcClusters",
+          "when": "view == arccluster",
+          "group": "navigation"
+        },
+        {
+          "command": "azurearc.rebuildSubItems",
+          "when": "view == arccluster",
+          "group": "navigation"
+        },
+        {
+          "command": "azurearc.refreshLocalClusters",
+          "when": "view == localcluster",
+          "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "azurearc.connectToArc",
+          "when": "view == localcluster && viewItem == canConnect",
+          "group": "inline"
+        },
+        {
+          "command": "azurearc.connectToArc",
+          "when": "view == localcluster && viewItem == canConnect"
         }
       ]
     },
@@ -53,10 +105,16 @@
     "views": {
       "arc-extension": [
         {
-          "id": "devsessions",
-          "name": "Developer Sessions",
+          "id": "arccluster",
+          "name": "Arc-connected Clusters",
           "icon": "$(azure)",
-          "contextualTitle": "Developer Sessions"
+          "contextualTitle": "Arc Clusters"
+        },
+        {
+          "id": "localcluster",
+          "name": "Native K8S",
+          "icon": "$(azure)",
+          "contextualTitle": "Native Clusters"
         },
         {
           "type": "webview",
@@ -73,16 +131,28 @@
         }
       ]
     },
+    "viewsWelcome": [
+      {
+        "view": "arccluster",
+        "contents": "Please login to Azure to get started.\n[Login](command:azure-account.askForLogin)",
+        "when": "askAzLogin == true"
+      },
+      {
+        "view": "arccluster",
+        "contents": "You have not selected subscriptions and resource groups to list your Arc-enabled K8S clusters.\n[Start](command:azurearc.rebuildSubItems)\n[Learn more](https://learn.microsoft.com/en-us/azure/azure-arc/kubernetes/overview) about Arc-enabled K8S clusters.",
+        "when": "askSubRg == true"
+      }
+    ],
     "configuration": {
       "title": "CloudGPT",
       "type": "object",
       "properties": {
-        "cloudgpt.apiKey": {
+        "azurearc.apiKey": {
           "markdownDescription": "CloudGPT API key",
           "type": "string",
           "order": 0
         },
-        "cloudgpt.apiUrl": {
+        "azurearc.apiUrl": {
           "markdownDescription": "CloudGPT API url",
           "type": "string",
           "default": "https://cloudgpt.azurewebsites.net/api/cloud-gpt/scenario/azurearcdev",
@@ -143,7 +213,7 @@
     "vscode:prepublish": "npm run package",
     "compile": "webpack",
     "watch": "webpack --watch",
-    "package": "webpack --mode production --devtool hidden-source-map",
+    "package": "webpack --devtool hidden-source-map",
     "compile-tests": "tsc -p . --outDir out",
     "watch-tests": "tsc -p . -w --outDir out",
     "pretest": "npm run compile-tests && npm run compile && npm run lint",
@@ -169,13 +239,24 @@
   },
   "extensionDependencies": [
     "ms-azuretools.azure-dev",
-    "ms-kubernetes-tools.aks-devx-tools"
+    "ms-vscode.azure-account"
   ],
   "dependencies": {
+    "@azure/arm-resources": "^4.2.2",
+    "@azure/arm-subscriptions": "^3.1.2",
+    "@azure/core-auth": "^1.3.2",
+    "@azure/ms-rest-azure-env": "^2.0.0",
+    "@azure/ms-rest-nodeauth": "^3.0.10",
+    "@kubernetes/client-node": "^0.18.1",
+    "@microsoft/vscode-azext-utils": "^1.0.0",
+    "@vscode/extension-telemetry": "^0.8.1",
+    "axios": "^1.4.0",
+    "bufferutil": "^4.0.7",
     "chatgpt": "^5.2.2",
     "gpt3-tokenizer": "^1.1.5",
     "node-fetch": "^3.3.0",
-    "axios": "^1.4.0",
+    "openid-client": "^5.4.3",
+    "utf-8-validate": "^6.0.3",
     "uuid": "^9.0.0"
   }
 }

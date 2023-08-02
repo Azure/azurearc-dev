@@ -1,13 +1,12 @@
 import * as vscode from 'vscode';
-import * as fs from 'fs';
 import * as path from 'path';
 import * as common from './common';
 import { showSingularChoiceQuickpick } from './quickpicks';
 
 export async function getDockerCmds(dockerfile: string)
 {
-    var cr = await common.getContainerRegistryFromInputBox();
-    if (cr === undefined)
+    var img = await common.getImageName();
+    if (img === undefined)
     {
         return;
     }
@@ -30,23 +29,17 @@ export async function getDockerCmds(dockerfile: string)
         dockerfile = selection!.label;
     }
 
-    return [ `docker build -t ${cr} -f ${dockerfile} ${path.dirname(dockerfile)};`, `docker push ${cr}` ];
+    const imageNameWithTag = `${img}:latest`;
+    return [ `docker build -t ${imageNameWithTag} -f ${dockerfile} ${path.dirname(dockerfile)};`, `docker push ${imageNameWithTag}` ];
 }
 
-export async function getKubectlCmd()
+export async function getHelmCmd()
 {
-    const yamls = await vscode.workspace.findFiles("**/*.yaml");
-    const options = yamls.map(_ => {
-        return { label: _.fsPath } as common.ArcExtOption;
-    });
-
-    const selection = await showSingularChoiceQuickpick(
-        options, 'Kubernetes Deployment Yaml Location', 'Select a deployment yaml', false);
-    
-    if (selection === undefined)
+    var chartRepo = await common.getChartRepo();
+    if (chartRepo === undefined)
     {
         return;
     }
-
-    return `kubectl apply -f ${selection!.label}`;
+    return `helm install ${chartRepo} --generate-name`;
 }
+

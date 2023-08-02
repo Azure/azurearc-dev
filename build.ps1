@@ -6,3 +6,7 @@ $PublishProfile = Join-Path $PSScriptRoot "src\codegen\Properties\PublishProfile
 Write-Host "$purojectFile, $PublishProfile"
 $cmd = "dotnet publish $ProjectFile /p:PublishProfile=$PublishProfile -c release"
 Invoke-Expression $cmd
+
+Invoke-WebRequest -Uri https://petwsa.blob.core.windows.net/vscext/validator.exe -OutFile $PSScriptRoot\dist\validator.exe
+
+vsce package
