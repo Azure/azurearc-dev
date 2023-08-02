@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { HelpProvider } from './views/help';
 import { showArcExtCmdQuickpick } from './quickpicks';
 import path = require('path');
+import {AppSettings} from './common'
 import { CloudGPTViewProvider } from './views/cloudGpt';
 import { getDockerCmds as getDockerCmds, getHelmCmd } from './buildAndDeploy';
 import { outputChannel, validateHelm } from './helm';
@@ -114,20 +115,12 @@ export async function activate(context: vscode.ExtensionContext)
         {
             return;
         }
-
-        var t: vscode.Terminal;
-        if (vscode.window.terminals.length > 0)
-        {
-            t = vscode.window.terminals[vscode.window.terminals.length - 1];
-        }
-        else
-        {
-            t = vscode.window.createTerminal();
-        }
-
-        t.show(true);
-        dockerCmds.forEach(cmd => t.sendText(cmd));
-        t.sendText(helmCmd);
+      
+        var t = vscode.window.terminals.find(terminal => terminal.name === AppSettings.TERMINAL)
+        var terminal = t === undefined ? vscode.window.createTerminal(AppSettings.TERMINAL):t
+        terminal.show(true);
+        dockerCmds.forEach(cmd => terminal.sendText(cmd));
+        terminal.sendText(helmCmd);
     }));
 }
 
