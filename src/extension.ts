@@ -117,7 +117,7 @@ export async function activate(context: vscode.ExtensionContext)
         }
       
         var t = vscode.window.terminals.find(terminal => terminal.name === AppSettings.TERMINAL)
-        var terminal = t == undefined ? vscode.window.createTerminal(AppSettings.TERMINAL):t
+        var terminal = t === undefined ? vscode.window.createTerminal(AppSettings.TERMINAL):t
         terminal.show(true);
         dockerCmds.forEach(cmd => terminal.sendText(cmd));
         terminal.sendText(kubectlCmd);
