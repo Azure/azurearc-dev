@@ -120,7 +120,7 @@ export async function activate(context: vscode.ExtensionContext)
         var terminal = t === undefined ? vscode.window.createTerminal(AppSettings.TERMINAL):t
         terminal.show(true);
         dockerCmds.forEach(cmd => terminal.sendText(cmd));
-        terminal.sendText(kubectlCmd);
+        terminal.sendText(helmCmd);
     }));
 }
 
