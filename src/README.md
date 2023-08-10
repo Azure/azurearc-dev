@@ -20,7 +20,7 @@ The project contains a dotnet project for codegen and the extension itself. Use 
 .\build.ps1
 ```
 
-After the build is done, building VSIX package with:
+Build VSIX package alone (with webpack) with:
 
 ```bash
 vsce package

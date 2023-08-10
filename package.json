@@ -1,10 +1,10 @@
 {
   "name": "azurearc",
-  "icon": "media/azurearc.png",
+  "icon": "media/Azure-Arc.png",
   "publisher": "peterwu",
   "displayName": "Azure Arc",
   "description": "Azure Arc",
-  "version": "0.0.6",
+  "version": "0.0.11",
   "engines": {
     "vscode": "^1.78.0"
   },
@@ -28,6 +28,14 @@
         "title": "Arc Extension: Getting started"
       },
       {
+        "command": "azurearc.getSamples",
+        "title": "Arc Extension: Get Samples"
+      },
+      {
+        "command": "azurearc.provisionCluster",
+        "title": "Arc Extension: Provision local cluster"
+      },
+      {
         "command": "azurearc.build2Deploy",
         "title": "Arc Extension: Build to Deploy"
       },
@@ -42,7 +50,7 @@
       },
       {
         "command": "azurearc.rebuildSubItems",
-        "title": "Edit",
+        "title": "Edit Selection",
         "icon": "$(edit)"
       },
       {
@@ -51,7 +59,22 @@
         "icon": "$(cloud-upload)"
       },
       {
-        "command": "azurearc.refreshLocalClusters",
+        "command": "azurearc.setNativeClusterContext",
+        "title": "Set as Current Context",
+        "icon": "$(star-full)"
+      },
+      {
+        "command": "azurearc.disconnectFromArc",
+        "title": "Disconnect from Arc",
+        "icon": "$(trash)"
+      },
+      {
+        "command": "azurearc.createAksEE",
+        "title": "Create an AKS Edge Essential Cluster",
+        "icon": "$(add)"
+      },
+      {
+        "command": "azurearc.refreshNativeClusters",
         "title": "Refresh",
         "icon": "$(refresh)"
       }
@@ -76,20 +99,43 @@
           "group": "navigation"
         },
         {
-          "command": "azurearc.refreshLocalClusters",
+            "command": "azurearc.createAksEE",
+            "when": "view == localcluster",
+            "group": "navigation"
+        },
+        {
+          "command": "azurearc.refreshNativeClusters",
           "when": "view == localcluster",
           "group": "navigation"
         }
       ],
       "view/item/context": [
         {
-          "command": "azurearc.connectToArc",
-          "when": "view == localcluster && viewItem == canConnect",
-          "group": "inline"
+            "command": "azurearc.disconnectFromArc",
+            "when": "view == arccluster && viewItem == arcclusterItem",
+            "group": "inline"
         },
         {
-          "command": "azurearc.connectToArc",
-          "when": "view == localcluster && viewItem == canConnect"
+            "command": "azurearc.disconnectFromArc",
+            "when": "view == arccluster && viewItem == arcclusterItem"
+        },
+        {
+            "command": "azurearc.connectToArc",
+            "when": "view == localcluster && (viewItem == canConnect || viewItem == canConnectAndSetContext)",
+            "group": "inline"
+        },
+        {
+            "command": "azurearc.connectToArc",
+            "when": "view == localcluster && (viewItem == canConnect || viewItem == canConnectAndSetContext)"
+        },
+        {
+            "command": "azurearc.setNativeClusterContext",
+            "when": "view == localcluster && (viewItem == canSetContext || viewItem == canConnectAndSetContext)",
+            "group": "inline"
+        },
+        {
+            "command": "azurearc.setNativeClusterContext",
+            "when": "view == localcluster && (viewItem == canSetContext || viewItem == canConnectAndSetContext)"
         }
       ]
     },
@@ -98,7 +144,7 @@
         {
           "id": "arc-extension",
           "title": "Arc Extension",
-          "icon": "$(azure)"
+          "icon": "media/Azure-Arc.svg"
         }
       ]
     },
@@ -112,16 +158,9 @@
         },
         {
           "id": "localcluster",
-          "name": "Native K8S",
+          "name": "Native K8S Clusters",
           "icon": "$(azure)",
           "contextualTitle": "Native Clusters"
-        },
-        {
-          "type": "webview",
-          "id": "chatView",
-          "name": "CloudGPT",
-          "icon": "$(azure)",
-          "contextualTitle": "Cloud GPT"
         },
         {
           "id": "helpandfeedback",
@@ -134,13 +173,18 @@
     "viewsWelcome": [
       {
         "view": "arccluster",
-        "contents": "Please login to Azure to get started.\n[Login](command:azure-account.askForLogin)",
+        "contents": "You have not yet signed in to Azure.\n[Login to Azure](command:azure-account.askForLogin)\nPlease sign in to work with your Arc-enabled clusters",
         "when": "askAzLogin == true"
       },
       {
         "view": "arccluster",
         "contents": "You have not selected subscriptions and resource groups to list your Arc-enabled K8S clusters.\n[Start](command:azurearc.rebuildSubItems)\n[Learn more](https://learn.microsoft.com/en-us/azure/azure-arc/kubernetes/overview) about Arc-enabled K8S clusters.",
         "when": "askSubRg == true"
+      },
+      {
+        "view": "localcluster",
+        "contents": "Could not discover any native K8S cluster from your KUBECONFIG.\n[Create an AKS EE cluster](command:azurearc.createAksEE?%5B%22aksee%22%5D)\nLearn more about [AKS Edge Essential](https://learn.microsoft.com/en-us/azure/aks/hybrid/aks-edge-overview)",
+        "when": "askCreateCluster == true"
       }
     ],
     "configuration": {
@@ -155,7 +199,6 @@
         "azurearc.apiUrl": {
           "markdownDescription": "CloudGPT API url",
           "type": "string",
-          "default": "https://cloudgpt.azurewebsites.net/api/cloud-gpt/scenario/azurearcdev",
           "order": 1
         }
       }
@@ -163,48 +206,55 @@
     "walkthroughs": [
       {
         "id": "walkthrough",
-        "title": "Azure Arc Developer Extension",
-        "icon": "media/arc.svg",
-        "description": "Learn to develop for the Edge by exploring resources and deploying a sample app",
+        "title": "Get Started with Azure Arc in VS Code",
+        "icon": "media/Azure-Arc.png",
+        "description": "Learn the different functionality offered in the Azure Arc VS Code extension.",
         "steps": [
-          {
-            "id": "gettingStarted",
-            "title": "Select a sample application",
-            "description": "Get started with a sample.\n[Get Started](command:azurearc.gettingStarted)",
-            "media": {
-              "image": "media/getsample.gif",
-              "altText": "Empty image"
-            }
-          },
-          {
-            "id": "provision",
-            "title": "Set up Kubernetes cluster for development",
-            "description": "Provision a local K8S or an AKS cluster for development.\n[Provision](command:azurearc.provisionK8s)",
-            "media": {
-              "image": "media/k8saks.png",
-              "altText": "Empty image"
-            }
-          },
-          {
-            "id": "buildanddeploy",
-            "title": "Put your application to test",
-            "description": "You can provision dependencies, build and deploy with a few clicks or commands",
-            "media": {
-              "markdown": "media/buildanddeploy.md"
-            }
-          },
-          {
-            "id": "learn",
-            "title": "Learn more by exploring tools and guidance",
-            "description": "Open help and feedback view and choose what you'd like to do next.\n[Help & Feedback](command:azurearc.openHelp)",
-            "media": {
-              "image": "media/azurearc.png",
-              "altText": "Empty image"
+            {
+                "id": "start",
+                "title": "Find Azure Arc commands",
+                "description": "All Azure Arc commands can be found in one place. Bring up the command palette by pressing F1 and search for 'Arc Extension: Getting Started'.",
+                "media": {
+                    "image": "media/getstarted.gif",
+                    "altText": "Empty image"
+                }
             },
-            "completionEvents": [
-              "onView:arc-extension"
-            ]
-          }
+            {
+                "id": "provision",
+                "title": "Deploy an AKS Edge Essentials cluster.",
+                "description": "Deploy your first Arc-compatible environment by creating a single machine AKS Edge Essentials cluster. You can connect this cluster to Arc and use it to deploy your application and Arc enabled workloads.",
+                "media": {
+                    "markdown": "media/provision.md"
+                }
+            },
+            {
+                "id": "connectToArc",
+                "title": "Connect native clusters to Arc",
+                "description": "Connect your AKS or AKS Hybrid clusters to Arc with a single click.",
+                "media": {
+                    "markdown": "media/connectToArc.md"
+                }
+            },
+            {
+                "id": "samples",
+                "title": "Discover sample applications",
+                "description": "This extension provids links to two kinds of sample applications:\nJumpstart Agora: Import the Jumpstart Agora Contoso repository, and follow the readme to deploy the Supermarket scenario\nSample plug-and-play applications: Clone one of our reference applications to set up an arc enabled workloads.\n[Get Samples](command:azurearc.getSamples)",
+                "media": {
+                    "image": "media/getsample.gif",
+                    "altText": "Empty image"
+                }
+            },
+            {
+                "id": "learn",
+                "title": "Learn more",
+                "description": "Open help and feedback view and choose what you'd like to do next.\n[Help & Feedback](command:azurearc.openHelp)",
+                "media": {
+                    "markdown": "media/learn.md"
+                },
+                "completionEvents": [
+                    "onView:arc-extension"
+                ]
+            }
         ]
       }
     ]
