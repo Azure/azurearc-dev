@@ -115,20 +115,23 @@ export async function activate(context: vscode.ExtensionContext)
             'azurearc.setNativeClusterContext',
             async (cluster: LocalClusterViewItem) => await localClusterProvider.setCurrentContext(cluster)));
 
-    context.subscriptions.push(vscode.commands.registerCommand('azurearc.build2Deploy', async (selected) => {
+    context.subscriptions.push(vscode.commands.registerCommand('azurearc.buildImage', async (selected) => {
         const dockerCmds = await getDockerCmds(selected?.fsPath);
         if (dockerCmds === undefined)
         {
             return;
         }
 
+        dockerCmds.forEach(cmd => executeInTerminal(cmd));
+    }));
+
+    context.subscriptions.push(vscode.commands.registerCommand('azurearc.installHelmchart', async () => {
         const helmCmd = await getHelmCmd();
         if (helmCmd === undefined)
         {
             return;
         }
 
-        dockerCmds.forEach(cmd => executeInTerminal(cmd));
         executeInTerminal(helmCmd);
     }));
 }
