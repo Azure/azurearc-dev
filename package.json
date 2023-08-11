@@ -4,7 +4,7 @@
   "publisher": "peterwu",
   "displayName": "Azure Arc",
   "description": "Azure Arc",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "engines": {
     "vscode": "^1.78.0"
   },
@@ -36,8 +36,12 @@
         "title": "Arc Extension: Provision local cluster"
       },
       {
-        "command": "azurearc.build2Deploy",
-        "title": "Arc Extension: Build to Deploy"
+        "command": "azurearc.buildImage",
+        "title": "Arc Extension: Build docker images"
+      },
+      {
+        "command": "azurearc.installHelmchart",
+        "title": "Arc Extension: Install helm charts"
       },
       {
         "command": "azurearc.validateHelm",
@@ -82,9 +86,10 @@
     "menus": {
       "explorer/context": [
         {
-          "command": "azurearc.build2Deploy",
-          "title": "Arc Build Image",
-          "group": "3.1_azurearc"
+          "command": "azurearc.buildImage",
+          "title": "Build Docker Image",
+          "group": "3.1_azurearc",
+          "when": "resourceFilename =~ /Dockerfile$/"
         }
       ],
       "view/title": [
