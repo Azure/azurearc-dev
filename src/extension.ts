@@ -112,6 +112,8 @@ export async function activate(context: vscode.ExtensionContext)
         async (cluster: LocalClusterViewItem) => {
             await localClusterProvider.setCurrentContext(cluster);
             await connectToArc(cluster);
+            await localClusterProvider.refresh();
+            await arcClusterProvider.rebuildClustersInfo();
         }));
 
     context.subscriptions.push(vscode.commands.registerCommand(
