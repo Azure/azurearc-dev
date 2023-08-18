@@ -190,6 +190,24 @@ export class ArcClustersProvider implements vscode.TreeDataProvider<ArcClusterVi
         await this.refresh();
     }
 
+    async addSubRg(newsubitem: SubscriptionItem)
+    {
+        if (this.context !== undefined)
+        {
+            var subRgSelection = this.context?.workspaceState.get<{ [key: string]: string[] }>(subRgSelectionKeyName);
+            if (subRgSelection![newsubitem.subscription.subscriptionId!] === undefined)
+            {
+                subRgSelection![newsubitem.subscription.subscriptionId!] = newsubitem.resourceGroups.map(rg => rg.label);
+            }
+            else
+            {
+                subRgSelection![newsubitem.subscription.subscriptionId!].concat(... newsubitem.resourceGroups.map(rg => rg.label));
+            }
+
+            this.context?.workspaceState.update(subRgSelectionKeyName, subRgSelection);
+        }
+    }
+
     async refresh()
     {
         await this.clustersInfo.refreshClusters();
