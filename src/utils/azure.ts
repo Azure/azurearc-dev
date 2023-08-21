@@ -219,11 +219,15 @@ export async function loadSubscriptionItems(
         }
         else
         {
-            selectedSubs.push(... await showMultipleChoiceQuickpick(
-                subscriptionItems, 'Select subscriptions', 'Select subscriptions', false) as SubscriptionItem[]);
+            var chosenSubs = await showMultipleChoiceQuickpick(subscriptionItems, 'Select subscriptions', 'Select subscriptions', false);
+            if (chosenSubs === undefined)
+            {
+                return [];
+            }
+            selectedSubs.push(... chosenSubs as SubscriptionItem[]);
         }
 
-        if (selectedSubs === undefined || selectedSubs.length === 0)
+        if (selectedSubs === undefined || selectedSubs.length === 0 || selectedSubs[0] === undefined)
         {
             return [];
         }
@@ -289,14 +293,19 @@ export async function loadResourceGroupItems(
         }
         else
         {
-            selectedRgs.push(...await showMultipleChoiceQuickpick(
+            var chosenRgs = await showMultipleChoiceQuickpick(
                 rgItems,
                 `Select Resource Groups from '${subscriptionItem.label}'`,
                 'Select Resource Groups',
-                false) as ResourceGroupItem[]);
+                false);
+            if (chosenRgs === undefined)
+            {
+                return [];
+            }
+            selectedRgs.push(... chosenRgs as ResourceGroupItem[]);
         }
     
-        if (selectedRgs === undefined || selectedRgs.length === 0)
+        if (selectedRgs === undefined || selectedRgs.length === 0 || selectedRgs[0] === undefined)
         {
             return [];
         }
