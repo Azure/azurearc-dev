@@ -235,6 +235,7 @@ export async function connectToArc(cluster: LocalClusterViewItem)
 
     executeInTerminal(`az account set --subscription "${subItem.subscription.subscriptionId!}"`);
     executeInTerminal(`az connectedk8s connect --name "${clusterName}" --resource-group "${subItem.resourceGroups[0].resourceGroup.name!}" --location "${subItem.resourceGroups[0].resourceGroup.location}" --correlation-id "${arcExtConnectedClusterCorrelationId}"`);
+    return subItem;
 }
 
 export async function createAksEE()
@@ -259,20 +260,41 @@ export async function createAksEE()
 
             const dest = path.join(dir, 'Deploy-AksEE.ps1');
             const content =
-`$url = "https://raw.githubusercontent.com/Azure/AKS-Edge/main/tools/scripts/AksEdgeQuickStart/AksEdgeQuickStart.ps1"
-Invoke-WebRequest -Uri $url -OutFile .\\AksEdgeQuickStart.ps1
-Unblock-File .\\AksEdgeQuickStart.ps1
-Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
+`
+try
+{
+    $url = "https://raw.githubusercontent.com/Azure/AKS-Edge/main/tools/scripts/AksEdgeQuickStart/AksEdgeQuickStart.ps1"
+    Invoke-WebRequest -Uri $url -OutFile .\\AksEdgeQuickStart.ps1
+    Unblock-File .\\AksEdgeQuickStart.ps1
+    Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
 
-.\\AksEdgeQuickStart.ps1
+    .\\AksEdgeQuickStart.ps1
 
-Write-Host "\`nAKS EE quickstart execution completed. If there were any failures, please check out these manual installation steps\`nhttps://learn.microsoft.com/en-us/azure/aks/hybrid/aks-edge-howto-setup-machine"  -ForegroundColor Cyan
-
+    Write-Host "\`nAKS EE quickstart execution completed. If there were any failures, please check out these manual installation steps\`nhttps://learn.microsoft.com/en-us/azure/aks/hybrid/aks-edge-howto-setup-machine"  -ForegroundColor Cyan
+}
+catch
+{
+    Write-Host "An error occurred:"
+    Write-Host $_
+}
+finally
+{
+    Write-Host "Press Ctrl+C to exit..."
+    while ($true)
+    {
+        if ([System.Console]::KeyAvailable)
+        {
+            break
+        }
+    }
+}
 `;
 
             fs.writeFileSync(dest, content, { flag: 'w' });
             vscode.window.showInformationMessage(
                 `Deployment script downloaded to ${dest}. Please run it from an elevated powershell console.`);
+            var cmd = `Start-Process powershell -verb runas -ArgumentList ("-Command ${dest}")`;
+            executeInTerminal(cmd);
         }
     });
 }

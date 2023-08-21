@@ -109,7 +109,14 @@ export async function activate(context: vscode.ExtensionContext)
 
     context.subscriptions.push(vscode.commands.registerCommand(
         'azurearc.connectToArc',
-        async (cluster: LocalClusterViewItem) => await connectToArc(cluster)));
+        async (cluster: LocalClusterViewItem) => {
+            await localClusterProvider.setCurrentContext(cluster);
+            var subitem = await connectToArc(cluster);
+            if (subitem !== undefined)
+            {
+                await arcClusterProvider.updateChosenSubItem(subitem);
+            }
+        }));
 
     context.subscriptions.push(vscode.commands.registerCommand(
             'azurearc.setNativeClusterContext',
