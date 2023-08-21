@@ -71,7 +71,7 @@ class ArcClustersInfo
     }
 
     // Refresh local kubeconfig and subscription items with the current sub/rg selection
-    async refreshClusters(loadArmResource: boolean = true)
+    async refreshClusters(loadArmResource: boolean = true, forceLoadSubRg: boolean = false)
     {
         return await vscode.window.withProgress({
             location: { viewId: 'arccluster' },
@@ -99,7 +99,7 @@ class ArcClustersInfo
                     currProg = reportProgress(progress, currProg, loginProgress);
                     const subRgSelection = this.getSubRgSelection();
 
-                    if ((this.subItems.length === 0 || this.subItems.every(_ => _.resourceGroups.length === 0)) &&
+                    if ((this.subItems.length === 0 || this.subItems.every(_ => _.resourceGroups.length === 0) || forceLoadSubRg) &&
                         subRgSelection !== undefined &&
                         Object.keys(subRgSelection).length > 0)
                     {
@@ -190,7 +190,7 @@ export class ArcClustersProvider implements vscode.TreeDataProvider<ArcClusterVi
         await this.refresh();
     }
 
-    async addSubRg(newsubitem: SubscriptionItem)
+    async updateChosenSubItem(newsubitem: SubscriptionItem)
     {
         if (this.context !== undefined)
         {
@@ -201,16 +201,22 @@ export class ArcClustersProvider implements vscode.TreeDataProvider<ArcClusterVi
             }
             else
             {
-                subRgSelection![newsubitem.subscription.subscriptionId!].concat(... newsubitem.resourceGroups.map(rg => rg.label));
+                newsubitem.resourceGroups.forEach(rg => {
+                    if (!subRgSelection![newsubitem.subscription.subscriptionId!].includes(rg.label))
+                    {
+                        subRgSelection![newsubitem.subscription.subscriptionId!].push(rg.label);
+                    }
+                });
             }
 
             this.context?.workspaceState.update(subRgSelectionKeyName, subRgSelection);
+            await this.refresh(true, true);
         }
     }
 
-    async refresh()
+    async refresh(loadArmResource: boolean = true, forceLoadSubRg: boolean = false)
     {
-        await this.clustersInfo.refreshClusters();
+        await this.clustersInfo.refreshClusters(loadArmResource, forceLoadSubRg);
         this._onDidChangeTreeData.fire();
     }
 

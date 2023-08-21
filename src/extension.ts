@@ -114,7 +114,7 @@ export async function activate(context: vscode.ExtensionContext)
             var subitem = await connectToArc(cluster);
             if (subitem !== undefined)
             {
-                await arcClusterProvider.addSubRg(subitem);
+                await arcClusterProvider.updateChosenSubItem(subitem);
             }
         }));
 
