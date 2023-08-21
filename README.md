@@ -47,35 +47,7 @@ Please provide feedback here.**
 
 
 ## Create your first Arc-enabled application
-Note: No arc dependencies in 101, but 201 will have KeyVault  
-
-1. Download Docker Desktop, and follow the instructions above to create a local Kubernetes cluster.
-
-2. Select “Get Samples” from the walkthough, or use the command palette to find the Get Samples command.
-<img src="https://petwsa.blob.core.windows.net/vscext/selectSample.png" alt="alt text">
-
-3. Use Set current context command to select your Kubernetes cluster if there are multiple clusters.
-<img src="https://petwsa.blob.core.windows.net/vscext/setCurrentContext.png" alt="alt text">
-
-4. Open Values.yaml and update the repository value with:
-
-```yaml
-docker.io/{usermame}/{imagename} 
-```
-
-5. Use the command pallette (F1 or CMD + Shift + P) to trigger the Build command.
-
-6. In the command pallette, provide your repository path (step 4), choose a docker file, and helm chart. 
-
-7. View your pods by running "kubectl get pods" in the VS Code console.
-
-### Deploy Jumpstart Agora applications  
-
-1. Select “Get Samples” from the walkthrough, or use the command palette to find the Get Samples command.
-
-
-2. Follow the Azd CLI instructions in the ReadMe
-> Testing Notes: We are investigating if we can pop up most probable read me in the editor for users
+Select “Get Samples” from the walkthough, or use the command palette to find the Get Samples command. You may start with Arc application samples or Jumpstart samples. Please follow instructions of the cloned sample repositories to proceed.
 
 ## Requirements
 

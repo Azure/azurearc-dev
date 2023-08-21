@@ -273,6 +273,7 @@ export class ArcClustersProvider implements vscode.TreeDataProvider<ArcClusterVi
 
 export function disconnectFromArc(cluster: ArcClusterViewItem)
 {
+    executeInTerminal(`az login`);
     executeInTerminal(`az account set --subscription "${cluster.subscriptionId}"`);
     executeInTerminal(`az connectedk8s delete -g ${cluster.resourceGroupName} -n ${cluster.label}`);
 }

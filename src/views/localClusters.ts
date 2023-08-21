@@ -233,6 +233,7 @@ export async function connectToArc(cluster: LocalClusterViewItem)
         return;
     }
 
+    executeInTerminal(`az login`);
     executeInTerminal(`az account set --subscription "${subItem.subscription.subscriptionId!}"`);
     executeInTerminal(`az connectedk8s connect --name "${clusterName}" --resource-group "${subItem.resourceGroups[0].resourceGroup.name!}" --location "${subItem.resourceGroups[0].resourceGroup.location}" --correlation-id "${arcExtConnectedClusterCorrelationId}"`);
     return subItem;
@@ -279,7 +280,7 @@ catch
 }
 finally
 {
-    Write-Host "Press Ctrl+C to exit..."
+    Write-Host "Press any key to exit..."
     while ($true)
     {
         if ([System.Console]::KeyAvailable)
@@ -292,7 +293,7 @@ finally
 
             fs.writeFileSync(dest, content, { flag: 'w' });
             vscode.window.showInformationMessage(
-                `Deployment script downloaded to ${dest}. Please run it from an elevated powershell console.`);
+                `Deployment script downloaded to ${dest} and will be executed in a new elevated console.`);
             var cmd = `Start-Process powershell -verb runas -ArgumentList ("-Command ${dest}")`;
             executeInTerminal(cmd);
         }
