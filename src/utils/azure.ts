@@ -79,7 +79,7 @@ export class SubscriptionItem implements ArcExtOption
             while (resources.nextLink)
             {
                 resources = await armClient.resources.listByResourceGroupNext(resources.nextLink);
-                rgItem.resources.concat(resources);
+                rgItem.resources = rgItem.resources.concat(resources);
             }
 
             if (resourceTypes && resourceTypes.length > 0)
