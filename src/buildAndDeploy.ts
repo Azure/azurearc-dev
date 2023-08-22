@@ -30,7 +30,9 @@ export async function getDockerCmds(dockerfile: string)
     }
 
     const imageNameWithTag = `${img}:latest`;
-    return [ `docker build -t ${imageNameWithTag} -f ${dockerfile} ${path.dirname(dockerfile)}`, `docker push ${imageNameWithTag}` ];
+    return [
+        `docker build -t ${imageNameWithTag} -f "${dockerfile}" "${path.dirname(dockerfile)}"`,
+        `docker push ${imageNameWithTag}` ];
 }
 
 export async function getHelmCmd()
@@ -40,6 +42,6 @@ export async function getHelmCmd()
     {
         return;
     }
-    return `helm install ${chartRepo} --generate-name`;
+    return `helm install "${chartRepo}" --generate-name`;
 }
 

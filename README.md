@@ -11,6 +11,10 @@ Use the Azure Arc extension to quickly start developing your Arc enabled applica
 
 We welcome feedbacks and feature requests via the issues page in [GitHub repository](https://github.com/Azure/azurearc-dev).
 
+## Check out the extension Walkthrough
+Get familiar with what the extension offers by going through the Walkthrough. You can press "F1" to bring up the command palette and type in "Welcome: Open Walkthrough" command, and then click on it to select the "Get Started with Azure Arc in VS Code" Walkthroughs from the list.
+<img src="https://petwsa.blob.core.windows.net/vscext/openWalkthrough.png" alt="alt text">
+
 ## Deploy your first Arc-enabled environment
 1. Select the plus icon to start creating your AKS Edge Essentials cluster.
 <br/>
@@ -18,16 +22,16 @@ We welcome feedbacks and feature requests via the issues page in [GitHub reposit
 <br/>
 <img src="https://petwsa.blob.core.windows.net/vscext/provisionAksEeNotification.png" alt="alt text">
 
-2. Ensure that your machine meets the requirements from single node deployment for Edge Ess entials. For a successful install, you will also need to ensure:
+2. Ensure that your machine meets the requirements from single node deployment for Edge Essentials. For a successful install, you will also need to ensure:
     - No VPN connection 
-    - No existing eflow, or other Kubernetes setup on the system 
+    - No existing eFlow, or other Kubernetes setup on the system 
     - Static wifi configuration during the installation
+
+<br/>
 
 3. Navigate to the folder where you want you download the install script and click “select folder” 
 
-4. Once the install scipt has downloaded, open an evelated poweshell console and run the scipt.
-
-> Testing Notes: We are investigating if we can open elevated powershell from users from VS Code ** 
+4. Once the script is downloaded, the extension automatically opens a powershell console and ask for admin privilege to run the installation script.
 
 5. Your cluster will appear in the Native K8s Cluster view. Click the connect to Arc button to Arc enable your cluster.
 <br/>
