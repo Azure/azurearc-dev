@@ -269,6 +269,7 @@ try
     Unblock-File .\\AksEdgeQuickStart.ps1
     Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
 
+    Write-Progress -Activity "Installing AKS EE, this could take approximately 5 mins" -Status "Installing..."
     .\\AksEdgeQuickStart.ps1
 
     Write-Host "\`nAKS EE quickstart execution completed. If there were any failures, please check out these manual installation steps\`nhttps://learn.microsoft.com/en-us/azure/aks/hybrid/aks-edge-howto-setup-machine"  -ForegroundColor Cyan
@@ -280,6 +281,7 @@ catch
 }
 finally
 {
+    Write-Progress -Activity "Installing AKS EE, this could take approximately 5 mins" -Completed
     Write-Host "Press any key to exit..."
     while ($true)
     {
@@ -293,7 +295,7 @@ finally
 
             fs.writeFileSync(dest, content, { flag: 'w' });
             vscode.window.showInformationMessage(
-                `Deployment script downloaded to ${dest} and will be executed in a new elevated console.`);
+                `Deployment script downloaded to ${dest} and will be executed in a new powershell console with admin privilege.`);
             var cmd = `Start-Process powershell -verb runas -ArgumentList ("-Command ${dest}")`;
             executeInTerminal(cmd);
         }
