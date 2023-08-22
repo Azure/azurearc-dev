@@ -228,7 +228,7 @@ export class ArcClustersProvider implements vscode.TreeDataProvider<ArcClusterVi
     async getChildren(element?: ArcClusterViewItemBase): Promise<ArcClusterViewItemBase[]>
     {
         const resourceCount = this.clustersInfo.getResourceCount();
-        if (resourceCount === undefined || resourceCount === 0)
+        if (resourceCount === undefined)
         {
             return [];
         }
