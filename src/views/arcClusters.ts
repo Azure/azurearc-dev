@@ -257,7 +257,8 @@ export class ArcClustersProvider implements vscode.TreeDataProvider<ArcClusterVi
                         vscode.TreeItemCollapsibleState.None,
                         sub!.label,
                         sub!.subscription.subscriptionId!,
-                        rg!.label));
+                        rg!.label,
+                        resource.location));
                 });
             }
         }
@@ -322,12 +323,14 @@ export class ArcClusterViewItem extends ArcClusterViewItemBase
         public readonly collapsibleState: vscode.TreeItemCollapsibleState,
         public readonly subscriptionName: string,
         public readonly subscriptionId: string,
-        public readonly resourceGroupName: string)
+        public readonly resourceGroupName: string,
+        public readonly description?: string)
     {
         super(label, collapsibleState);
         this.subscriptionName = subscriptionName;
         this.subscriptionId = subscriptionId;
         this.resourceGroupName = resourceGroupName;
+        this.description = description;
     }
 
     iconPath = new vscode.ThemeIcon('cloud');
