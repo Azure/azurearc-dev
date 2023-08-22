@@ -127,7 +127,7 @@ export async function ensureLoggedIn()
 
 export async function buildSubscriptionItems(
     interactive: boolean = true,
-    subRgSelection?: { [key: string]: string[] }): Promise<SubscriptionItem[]>
+    subRgSelection?: { [key: string]: string[] }): Promise<SubscriptionItem[] | undefined>
 {
     return await vscode.window.withProgress({
         location: { viewId: 'arccluster' },
@@ -145,18 +145,22 @@ export async function buildSubscriptionItems(
         currProg = reportProgress(progress, currProg, loginProgress);
 
         const subscriptionItems = await loadSubscriptionItems(interactive, false, Object.keys(subRgSelection || {}));
-        currProg = reportProgress(progress, currProg, loadSubProgress);
-        if (subscriptionItems === undefined || subscriptionItems.length === 0)
+        if (subscriptionItems === undefined)
         {
-            return [];
+            return undefined;
         }
+        currProg = reportProgress(progress, currProg, loadSubProgress);
 
         const rgSelectionProgressInc = (loadRgProgress - loadSubProgress) / subscriptionItems.length;
         for (const sub of subscriptionItems)
         {
             const key: string = sub.subscription.subscriptionId!;
             const rgList: string[] = subRgSelection ? subRgSelection[key] : [];
-            await loadResourceGroupItems(sub, interactive, false, rgList);
+            var rgItems = await loadResourceGroupItems(sub, interactive, false, rgList);
+            if (rgItems === undefined)
+            {
+                return undefined;
+            }
             currProg = reportProgress(progress, currProg, currProg + rgSelectionProgressInc);
         };
 
@@ -168,7 +172,7 @@ export async function buildSubscriptionItems(
 export async function loadSubscriptionItems(
     interactive: boolean = true,
     singleSelection: boolean = false,
-    subscriptionFilter?: string[]) : Promise<SubscriptionItem[]>
+    subscriptionFilter?: string[]) : Promise<SubscriptionItem[] | undefined>
 {
     await azureAccountApi.waitForFilters();
     var subscriptionItems: SubscriptionItem[] = [];
@@ -216,22 +220,21 @@ export async function loadSubscriptionItems(
         {
             selectedSubs.push(await showSingularChoiceQuickpick(
                 subscriptionItems, 'Select subscriptions', 'Select subscriptions', false) as SubscriptionItem);
+            if (selectedSubs.length === 1 && selectedSubs[0] === undefined)
+            {
+                return undefined;
+            }
         }
         else
         {
             var chosenSubs = await showMultipleChoiceQuickpick(subscriptionItems, 'Select subscriptions', 'Select subscriptions', false);
+            // If the choice is dismissed, abort selection
             if (chosenSubs === undefined)
             {
-                return [];
+                return undefined;
             }
             selectedSubs.push(... chosenSubs as SubscriptionItem[]);
         }
-
-        if (selectedSubs === undefined || selectedSubs.length === 0 || selectedSubs[0] === undefined)
-        {
-            return [];
-        }
-
         return selectedSubs;
     }
 
@@ -242,11 +245,11 @@ export async function loadResourceGroupItems(
     subscriptionItem: SubscriptionItem,
     interactive: boolean = true,
     singleSelection: boolean = false,
-    resourceGroupFilter?: string[]) : Promise<ResourceGroupItem[]>
+    resourceGroupFilter?: string[]) : Promise<ResourceGroupItem[] | undefined>
 {
     const { session, subscription } = subscriptionItem;
     var rgItems: ResourceGroupItem[] = [];
-    const hasFilter = resourceGroupFilter !== undefined && resourceGroupFilter.length > 0;
+    const hasFilter = resourceGroupFilter !== undefined;
 
     try
     {
@@ -266,7 +269,7 @@ export async function loadResourceGroupItems(
             description: rg.location,
             resourceGroup: rg,
             resources: [],
-            picked: hasFilter && resourceGroupFilter.includes(rg.name || '')
+            picked: !hasFilter || resourceGroupFilter.includes(rg.name || '')
         })));
     }
     catch (error)
@@ -290,6 +293,10 @@ export async function loadResourceGroupItems(
                 `Select Resource Groups from '${subscriptionItem.label}'`,
                 'Select Resource Groups',
                 false) as ResourceGroupItem);
+            if (selectedRgs.length === 1 && selectedRgs[0] === undefined)
+            {
+                return undefined;
+            }
         }
         else
         {
@@ -298,16 +305,15 @@ export async function loadResourceGroupItems(
                 `Select Resource Groups from '${subscriptionItem.label}'`,
                 'Select Resource Groups',
                 false);
+            // If the choice is dismissed, abort selection.
             if (chosenRgs === undefined)
             {
-                return [];
+                return undefined;
             }
-            selectedRgs.push(... chosenRgs as ResourceGroupItem[]);
-        }
-    
-        if (selectedRgs === undefined || selectedRgs.length === 0 || selectedRgs[0] === undefined)
-        {
-            return [];
+            else
+            {
+                selectedRgs.push(... chosenRgs as ResourceGroupItem[]);
+            }
         }
 
         rgItems = selectedRgs;
