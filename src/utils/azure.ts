@@ -172,6 +172,10 @@ export async function buildSubscriptionItems(
     });
 }
 
+/* Return:
+   1. SubscriptionItem[]: contains selected SubscriptionItems
+   2. undefined: only when interactive is true and selection is dismissed.
+*/
 export async function loadSubscriptionItems(
     interactive: boolean = true,
     singleSelection: boolean = false,
@@ -244,6 +248,10 @@ export async function loadSubscriptionItems(
     return subscriptionItems;
 }
 
+/* Return:
+   1. ResourceGroupItem[]: contains selected ResourceGroupItems
+   2. undefined: only when interactive is true and selection is dismissed.
+*/
 export async function loadResourceGroupItems(
     subscriptionItem: SubscriptionItem,
     interactive: boolean = true,
