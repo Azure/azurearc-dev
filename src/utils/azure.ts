@@ -145,6 +145,8 @@ export async function buildSubscriptionItems(
         currProg = reportProgress(progress, currProg, loginProgress);
 
         const subscriptionItems = await loadSubscriptionItems(interactive, false, Object.keys(subRgSelection || {}));
+        
+        // If selection is needed but user dismiss the selection, abort loading
         if (subscriptionItems === undefined)
         {
             return undefined;
@@ -157,6 +159,7 @@ export async function buildSubscriptionItems(
             const key: string = sub.subscription.subscriptionId!;
             const rgList: string[] = subRgSelection ? subRgSelection[key] : [];
             var rgItems = await loadResourceGroupItems(sub, interactive, false, rgList);
+            // If selection is needed but user dismiss the selection, abort loading
             if (rgItems === undefined)
             {
                 return undefined;
@@ -228,7 +231,7 @@ export async function loadSubscriptionItems(
         else
         {
             var chosenSubs = await showMultipleChoiceQuickpick(subscriptionItems, 'Select subscriptions', 'Select subscriptions', false);
-            // If the choice is dismissed, abort selection
+            // If the selection is dismissed, abort further selection and view load.
             if (chosenSubs === undefined)
             {
                 return undefined;
@@ -305,7 +308,7 @@ export async function loadResourceGroupItems(
                 `Select Resource Groups from '${subscriptionItem.label}'`,
                 'Select Resource Groups',
                 false);
-            // If the choice is dismissed, abort selection.
+            // If the selection is dismissed, abort further selection and view load.
             if (chosenRgs === undefined)
             {
                 return undefined;
