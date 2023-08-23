@@ -269,7 +269,7 @@ export async function loadResourceGroupItems(
             description: rg.location,
             resourceGroup: rg,
             resources: [],
-            picked: !hasFilter || resourceGroupFilter.includes(rg.name || '')
+            picked: hasFilter && resourceGroupFilter.includes(rg.name || '')
         })));
     }
     catch (error)
