@@ -103,7 +103,12 @@ class ArcClustersInfo
                         subRgSelection !== undefined &&
                         Object.keys(subRgSelection).length > 0)
                     {
-                        this.subItems = await buildSubscriptionItems(false, subRgSelection);
+                        var subItems = await buildSubscriptionItems(false, subRgSelection);
+                        if (subItems === undefined)
+                        {
+                            return;
+                        }
+                        this.subItems = subItems;
                         loadArmResource = true;
                     }
 
@@ -145,19 +150,19 @@ class ArcClustersInfo
     {
         const subRgSelection = this.getSubRgSelection();
         const newSubItems = await buildSubscriptionItems(true, subRgSelection);
-
-        if (newSubItems.length > 0)
+        if (newSubItems === undefined)
         {
-            this.subItems = newSubItems;
-            if (context !== undefined)
-            {
-                const subRgSelection: { [key: string]: string[] } = {};
-                this.subItems.forEach(subItem => {
-                    subRgSelection![subItem.subscription.subscriptionId!] = subItem.resourceGroups.map(rg => rg.label);
-                });
+            return;
+        }
+        this.subItems = newSubItems;
+        if (context !== undefined)
+        {
+            const subRgSelection: { [key: string]: string[] } = {};
+            this.subItems.forEach(subItem => {
+                subRgSelection![subItem.subscription.subscriptionId!] = subItem.resourceGroups.map(rg => rg.label);
+            });
 
-                context?.workspaceState.update(subRgSelectionKeyName, subRgSelection);
-            }
+            context?.workspaceState.update(subRgSelectionKeyName, subRgSelection);
         }
     }
 

@@ -217,8 +217,8 @@ export async function connectToArc(cluster: LocalClusterViewItem)
     }
 
     const subItem = subItems[0];
-    await loadResourceGroupItems(subItem, true, true);
-    if (subItem.resourceGroups.length === 0)
+    var rgItems = await loadResourceGroupItems(subItem, true, true);
+    if (rgItems === undefined || subItem.resourceGroups.length === 0)
     {
         return;
     }
