@@ -1,8 +1,9 @@
 import * as vscode from 'vscode';
-import { SubscriptionItem, buildSubscriptionItems, isLoggedIn } from '../utils/azure';
+import { SubscriptionItem, buildSubscriptionItems, loadSubscriptionItems, ensureLoggedIn, isLoggedIn } from '../utils/azure';
 import { executeInTerminal, reportProgress } from '../common';
 
 const askSubRgContextName = 'askSubRg';
+const loadingSubRgContextName = 'loadingSubRg';
 const askAzLoginContextName = 'askAzLogin';
 
 const subRgSelectionKeyName = "subRgSelection";
@@ -10,6 +11,7 @@ const subRgSelectionKeyName = "subRgSelection";
 enum ClusterViewStatus
 {
     notLoggedIn,
+    loadingSubRg,
     noSubRgSelection,
     noArcClusters,
     ok
@@ -46,27 +48,38 @@ class ArcClustersInfo
     async setWelcomeViewVisibility(status: ClusterViewStatus)
     {
         var askAzLogin = false;
+        var loadingSubRg = false;
         var askSubRg = false;
         switch (status)
         {
             case ClusterViewStatus.notLoggedIn:
                 askAzLogin = true;
+                loadingSubRg = false;
+                askSubRg = false;
+                break;
+
+            case ClusterViewStatus.loadingSubRg:
+                askAzLogin = false;
+                loadingSubRg = true;
                 askSubRg = false;
                 break;
 
             case ClusterViewStatus.noSubRgSelection:
                 askAzLogin = false;
+                loadingSubRg = false;
                 askSubRg = true;
                 break;
 
             case ClusterViewStatus.noArcClusters:
             case ClusterViewStatus.ok:
                 askAzLogin = false;
+                loadingSubRg = false;
                 askSubRg = false;
                 break;
         }
 
         await vscode.commands.executeCommand('setContext', askAzLoginContextName, askAzLogin);
+        await vscode.commands.executeCommand('setContext', loadingSubRgContextName, loadingSubRg);
         await vscode.commands.executeCommand('setContext', askSubRgContextName, askSubRg);
     }
 
@@ -170,6 +183,16 @@ class ArcClustersInfo
     {
         return this.context?.workspaceState.get<{ [key: string]: string[] }>(subRgSelectionKeyName);
     }
+
+    async azLoginAndLoadCache()
+    {
+        const loggedIn = await ensureLoggedIn();
+        if (loggedIn)
+        {
+            await this.setWelcomeViewVisibility(ClusterViewStatus.loadingSubRg);
+            await loadSubscriptionItems(false);
+        }
+    }
 }
 
 export class ArcClustersProvider implements vscode.TreeDataProvider<ArcClusterViewItemBase>
@@ -223,6 +246,11 @@ export class ArcClustersProvider implements vscode.TreeDataProvider<ArcClusterVi
     {
         await this.clustersInfo.refreshClusters(loadArmResource, forceLoadSubRg);
         this._onDidChangeTreeData.fire();
+    }
+
+    async azLoginAndLoadCache()
+    {
+        await this.clustersInfo.azLoginAndLoadCache();
     }
 
     getTreeItem(element: ArcClusterViewItemBase): vscode.TreeItem
