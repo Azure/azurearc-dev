@@ -2,9 +2,10 @@
   "name": "azurearc",
   "icon": "media/Azure-Arc.png",
   "publisher": "peterwu",
+  "preview": true,
   "displayName": "Azure Arc",
   "description": "Azure Arc",
-  "version": "0.0.16",
+  "version": "0.0.17",
   "engines": {
     "vscode": "^1.78.0"
   },
