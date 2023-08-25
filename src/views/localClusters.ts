@@ -4,6 +4,7 @@ import * as path from 'path';
 import { KubeConfig, CoreV1Api } from '@kubernetes/client-node';
 import { executeInTerminal, openFileDialog, reportProgress } from '../common';
 import { ensureLoggedIn, loadResourceGroupItems, loadSubscriptionItems } from '../utils/azure';
+import { TelemetryEvent, sendTelemetryEvent } from '../telemetry';
 
 const k8s = require('@kubernetes/client-node');
 const askCreateClusterContextName = 'askCreateCluster';
@@ -239,6 +240,7 @@ export async function connectToArc(cluster: LocalClusterViewItem)
         return;
     }
 
+    sendTelemetryEvent(TelemetryEvent.connectToArc);
     executeInTerminal(`az login`);
     executeInTerminal(`az account set --subscription "${subItem.subscription.subscriptionId!}"`);
     executeInTerminal(`az connectedk8s connect --name "${clusterName}" --resource-group "${subItem.resourceGroups[0].resourceGroup.name!}" --location "${subItem.resourceGroups[0].resourceGroup.location}" --correlation-id "${arcExtConnectedClusterCorrelationId}"`);
@@ -249,6 +251,7 @@ export async function createAksEE()
 {
     const proceed = "Proceed";
     const cancel = "Cancel";
+    sendTelemetryEvent(TelemetryEvent.createAksEE);
     await vscode.window.showInformationMessage(
         `Before proceeding with the download, please ensure you meet the Edge Essentials [hardware requirements](https://learn.microsoft.com/en-us/azure/aks/hybrid/aks-edge-system-requirements).`,
         {
@@ -259,6 +262,7 @@ export async function createAksEE()
     ).then(async result => {
         if (result === proceed)
         {
+            sendTelemetryEvent(TelemetryEvent.downloadAksEE);
             var dir = await openFileDialog(false, true, false, 'Select a folder to download installation scripts');
             if (dir === undefined)
             {
