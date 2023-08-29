@@ -31,6 +31,18 @@ export class ResourceGroupItem implements ArcExtOption
         this.resources = resources;
         this.picked = picked;
     }
+
+    localeCompare(other: ResourceGroupItem)
+    {
+        if (this.picked !== other.picked)
+        {
+            return this.picked? -1: 1;
+        }
+        else
+        {
+            return (this.label || '').localeCompare(other.label || '');
+        }
+    }
 }
 
 export class SubscriptionItem implements ArcExtOption
@@ -97,6 +109,18 @@ export class SubscriptionItem implements ArcExtOption
         }
 
         return this.getResourceCount();
+    }
+
+    localeCompare(other: SubscriptionItem)
+    {
+        if (this.picked !== other.picked)
+        {
+            return this.picked? -1: 1;
+        }
+        else
+        {
+            return this.label.localeCompare(other.label);
+        }
     }
 }
 
@@ -219,7 +243,7 @@ export async function loadSubscriptionItems(
         }
     }
 
-    subscriptionItems.sort((a, b) => a.label.localeCompare(b.label));
+    subscriptionItems.sort((a, b) => a.localeCompare(b));
 
     if (interactive)
     {
@@ -275,21 +299,21 @@ export async function loadResourceGroupItems(
             resourceGroups = resourceGroups.filter(_ => resourceGroupFilter.includes(_.name || ''));
         }
 
-        rgItems.push(...resourceGroups.map(rg => ({
-            label: rg.name || '',
-            action: async () => {},
-            description: rg.location,
-            resourceGroup: rg,
-            resources: [],
-            picked: hasFilter && resourceGroupFilter.includes(rg.name || '')
-        })));
+        rgItems.push(...resourceGroups.map(rg => new ResourceGroupItem(
+            rg.name || '',
+            async () => {},
+            rg.location,
+            rg,
+            [],
+            hasFilter && resourceGroupFilter.includes(rg.name || '')
+        )));
     }
     catch (error)
     {
         console.log(`Error listing resource groups for '${session.userId}': ${error}`);
     }
 
-    rgItems.sort((a, b) => (a.label || '').localeCompare(b.label || ''));
+    rgItems.sort((a, b) => a.localeCompare(b));
     if (rgItems.length === 0)
     {
         return [];
