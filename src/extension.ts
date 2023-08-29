@@ -95,6 +95,10 @@ export async function activate(context: vscode.ExtensionContext)
         await arcClusterProvider.rebuildClustersInfo();
     }));
 
+    context.subscriptions.push(vscode.commands.registerCommand('azurearc.azLoginAndLoadCache', async () => {
+        await arcClusterProvider.azLoginAndLoadCache();
+    }));
+
     context.subscriptions.push(vscode.commands.registerCommand(
         'azurearc.disconnectFromArc',
         async (cluster: ArcClusterViewItem) => await disconnectFromArc(cluster)));
