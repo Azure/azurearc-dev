@@ -32,7 +32,7 @@ export class ResourceGroupItem implements ArcExtOption
         this.picked = picked;
     }
 
-    localeCompare(other: ResourceGroupItem)
+    compare(other: ResourceGroupItem)
     {
         if (this.picked !== other.picked)
         {
@@ -111,7 +111,7 @@ export class SubscriptionItem implements ArcExtOption
         return this.getResourceCount();
     }
 
-    localeCompare(other: SubscriptionItem)
+    compare(other: SubscriptionItem)
     {
         if (this.picked !== other.picked)
         {
@@ -243,7 +243,7 @@ export async function loadSubscriptionItems(
         }
     }
 
-    subscriptionItems.sort((a, b) => a.localeCompare(b));
+    subscriptionItems.sort((a, b) => a.compare(b));
 
     if (interactive)
     {
@@ -313,7 +313,7 @@ export async function loadResourceGroupItems(
         console.log(`Error listing resource groups for '${session.userId}': ${error}`);
     }
 
-    rgItems.sort((a, b) => a.localeCompare(b));
+    rgItems.sort((a, b) => a.compare(b));
     if (rgItems.length === 0)
     {
         return [];
