@@ -175,13 +175,13 @@ class ArcClustersInfo
                 subRgSelection![subItem.subscription.subscriptionId!] = subItem.resourceGroups.map(rg => rg.label);
             });
 
-            context?.workspaceState.update(subRgSelectionKeyName, subRgSelection);
+            context?.globalState.update(subRgSelectionKeyName, subRgSelection);
         }
     }
 
     getSubRgSelection()
     {
-        return this.context?.workspaceState.get<{ [key: string]: string[] }>(subRgSelectionKeyName);
+        return this.context?.globalState.get<{ [key: string]: string[] }>(subRgSelectionKeyName);
     }
 
     async azLoginAndLoadCache()
@@ -222,7 +222,7 @@ export class ArcClustersProvider implements vscode.TreeDataProvider<ArcClusterVi
     {
         if (this.context !== undefined)
         {
-            var subRgSelection = this.context?.workspaceState.get<{ [key: string]: string[] }>(subRgSelectionKeyName);
+            var subRgSelection = this.context?.globalState.get<{ [key: string]: string[] }>(subRgSelectionKeyName);
             if (subRgSelection![newsubitem.subscription.subscriptionId!] === undefined)
             {
                 subRgSelection![newsubitem.subscription.subscriptionId!] = newsubitem.resourceGroups.map(rg => rg.label);
@@ -237,7 +237,7 @@ export class ArcClustersProvider implements vscode.TreeDataProvider<ArcClusterVi
                 });
             }
 
-            this.context?.workspaceState.update(subRgSelectionKeyName, subRgSelection);
+            this.context?.globalState.update(subRgSelectionKeyName, subRgSelection);
             await this.refresh(true, true);
         }
     }
