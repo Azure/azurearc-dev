@@ -16,6 +16,7 @@ const unsupportedViewItemLabel = "Not Supported";
 enum K8sDistros{
     aks = "AKS",
     aksee = "AKS EE",
+    akshci = "AKS HCI",
     unsupported = "Not supported"
 }
 
@@ -179,6 +180,11 @@ export class LocalClustersProvider implements vscode.TreeDataProvider<vscode.Tre
                 {
                     // AKS EE nodes has an annotation with its distro
                     distro = K8sDistros.aksee;
+                }
+                else if (res?.body?.items?.every(_ =>
+                    _.metadata?.annotations?.['csi.volume.kubernetes.io/nodeid']?.includes('akshci')))
+                {
+                    distro = K8sDistros.akshci;
                 }
 
                 if (distro !== K8sDistros.unsupported)
