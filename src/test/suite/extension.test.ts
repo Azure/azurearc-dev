@@ -15,7 +15,7 @@ suite('Extension Test Suite', () => {
         // Walkthrough
         vscode.commands.executeCommand(
             'workbench.action.openWalkthrough', 
-            { category: 'peterwu.azurearc#walkthrough'}
+            { category: 'azurearc-dev.azurearc#walkthrough'}
         );
 
         // View

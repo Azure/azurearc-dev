@@ -4,6 +4,7 @@ import * as path from 'path';
 import axios from 'axios';
 import * as common from './common';
 import { showSingularChoiceQuickpick } from './quickpicks';
+import { TelemetryEvent, sendTelemetryEvent } from './telemetry';
 
 export enum SampleTypes
 {
@@ -27,6 +28,11 @@ export async function selectSample(type: SampleTypes)
                 detail: t.description,
                 data: t.repositoryPath,
                 action: async context => {
+                    const telEvent = type === SampleTypes.arcApp ?
+                        TelemetryEvent.cloneArcSample : TelemetryEvent.cloneJumpstart;
+
+                    sendTelemetryEvent(telEvent);
+                    
                     var dir = await common.openFileDialog(false, true, false, "Select Sample Working Directory");
                     if (dir === undefined)
                     {

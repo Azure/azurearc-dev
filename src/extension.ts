@@ -59,7 +59,7 @@ export async function activate(context: vscode.ExtensionContext)
     vscode.commands.registerCommand('azurearc.openWalkthrough', () => {
         vscode.commands.executeCommand(
             'workbench.action.openWalkthrough', 
-            { category: 'peterwu.azurearc#walkthrough'}
+            { category: 'azurearc-dev.azurearc#walkthrough'}
         );
     });
 
