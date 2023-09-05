@@ -4,7 +4,7 @@ import { SubscriptionClient, SubscriptionModels } from '@azure/arm-subscriptions
 import { apiUtils } from '@microsoft/vscode-azext-utils';
 import { AzureAccountExtensionApi, AzureSession } from '../external/azure-account.api';
 import { GenericResourceExpanded, ResourceGroup } from '@azure/arm-resources/esm/models';
-import { ArcExtOption, reportProgress } from '../common';
+import { ArcExtOption } from '../common';
 import { showMultipleChoiceQuickpick, showSingularChoiceQuickpick } from '../quickpicks';
 
 export class ResourceGroupItem implements ArcExtOption
@@ -154,19 +154,11 @@ export async function buildSubscriptionItems(
     subRgSelection?: { [key: string]: string[] }): Promise<SubscriptionItem[] | undefined>
 {
     return await vscode.window.withProgress({
-        location: { viewId: 'arccluster' },
-        title: 'Selecting subscriptions and resource groups...'
+        location: vscode.ProgressLocation.Notification,
+        title: 'Initializing azure environment'
     }, async (progress, token) => {
-        const startProgress = 0;
-        const loginProgress = 20;
-        const loadSubProgress = 40;
-        const loadRgProgress = 90;
-        const completeProgress = 100;
-
-        var currProg = reportProgress(progress, startProgress, startProgress);
         ensureLoggedIn();
-
-        currProg = reportProgress(progress, currProg, loginProgress);
+        progress.report({message: "Loading subscription"});
 
         const subscriptionItems = await loadSubscriptionItems(interactive, false, Object.keys(subRgSelection || {}));
         
@@ -175,9 +167,8 @@ export async function buildSubscriptionItems(
         {
             return undefined;
         }
-        currProg = reportProgress(progress, currProg, loadSubProgress);
+        progress.report({message: "Subscription loaded. Loading resource groups"});
 
-        const rgSelectionProgressInc = (loadRgProgress - loadSubProgress) / subscriptionItems.length;
         for (const sub of subscriptionItems)
         {
             const key: string = sub.subscription.subscriptionId!;
@@ -188,10 +179,9 @@ export async function buildSubscriptionItems(
             {
                 return undefined;
             }
-            currProg = reportProgress(progress, currProg, currProg + rgSelectionProgressInc);
         };
 
-        currProg = reportProgress(progress, currProg, completeProgress);
+        progress.report({message: "Resource Group loaded"});
         return subscriptionItems;
     });
 }

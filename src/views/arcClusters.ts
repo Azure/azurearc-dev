@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { SubscriptionItem, buildSubscriptionItems, isLoggedIn } from '../utils/azure';
-import { executeInTerminal, reportProgress } from '../common';
+import { executeInTerminal } from '../common';
 
 const askSubRgContextName = 'askSubRg';
 const askAzLoginContextName = 'askAzLogin';
@@ -74,7 +74,7 @@ class ArcClustersInfo
     async refreshClusters(loadArmResource: boolean = true, forceLoadSubRg: boolean = false)
     {
         return await vscode.window.withProgress({
-            location: { viewId: 'arccluster' },
+            location: vscode.ProgressLocation.Notification,
             title: 'Reloading Arc clusters...'
         }, async (progress, token) => {
             const startProgress = 0;
@@ -82,7 +82,6 @@ class ArcClustersInfo
             const loadArmResourcesProgress = 90;
             const completeProgress = 100;
 
-            var currProg = reportProgress(progress, startProgress, startProgress);
             var status = ClusterViewStatus.ok;
             try
             {
@@ -92,11 +91,11 @@ class ArcClustersInfo
                 {
                     this.subItems = [];
                     status = ClusterViewStatus.notLoggedIn;
-                    currProg = reportProgress(progress, currProg, loadArmResourcesProgress);
+                    progress.report({message: "Logging In"});
                 }
                 else
                 {
-                    currProg = reportProgress(progress, currProg, loginProgress);
+                    progress.report({message: "Logged In"});
                     const subRgSelection = this.getSubRgSelection();
 
                     if ((this.subItems.length === 0 || this.subItems.every(_ => _.resourceGroups.length === 0) || forceLoadSubRg) &&
@@ -119,12 +118,10 @@ class ArcClustersInfo
                         {
                             await sub.loadResources(
                                 [this.connectedClustersResourceType, this.provisionedClustersResourceType]);
-                            currProg = reportProgress(progress, currProg, currProg + inc);
                             await new Promise((resolve) => setTimeout(resolve, 200));
                         }
                     }
 
-                    currProg = reportProgress(progress, currProg, loadArmResourcesProgress);
                     if (!this.hasSubRgSelection())
                     {
                         status = ClusterViewStatus.noSubRgSelection;
@@ -140,7 +137,6 @@ class ArcClustersInfo
             finally
             {
                 await this.setWelcomeViewVisibility(status);
-                currProg = reportProgress(progress, currProg, completeProgress);
             }
         });
     }
