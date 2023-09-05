@@ -144,8 +144,7 @@ export async function ensureLoggedIn()
     var loggedIn = await azureAccountApi.waitForLogin();
     if (!loggedIn)
     {
-        await vscode.commands.executeCommand('azure-account.askForLogin');
-        loggedIn = await azureAccountApi.waitForLogin();
+        loggedIn = await vscode.commands.executeCommand('azure-account.askForLogin');
     }
     return loggedIn;
 }
