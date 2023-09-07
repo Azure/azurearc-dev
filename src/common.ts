@@ -124,6 +124,21 @@ export async function getImageName(context?: vscode.ExtensionContext)
     return res;
 }
 
+export function reportProgress(
+    progress: vscode.Progress<{ message?: string; increment?: number }>,
+    currentProgress: number,
+    targetProgress: number,
+    message?: string): number
+{
+    if (targetProgress < currentProgress)
+    {
+        return currentProgress;
+    }
+
+    progress.report({ increment: targetProgress - currentProgress, message: message });
+    return targetProgress;
+}
+
 export async function getChartRepo(context?: vscode.ExtensionContext)
 {
     const ymlFiles = await vscode.workspace.findFiles("**/*Chart.yaml");

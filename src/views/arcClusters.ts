@@ -77,11 +77,6 @@ class ArcClustersInfo
             location: vscode.ProgressLocation.Notification,
             title: 'Reloading Arc clusters...'
         }, async (progress, token) => {
-            const startProgress = 0;
-            const loginProgress = 20;
-            const loadArmResourcesProgress = 90;
-            const completeProgress = 100;
-
             var status = ClusterViewStatus.ok;
             try
             {
@@ -111,7 +106,6 @@ class ArcClustersInfo
                         loadArmResource = true;
                     }
 
-                    const inc = (loadArmResourcesProgress - loginProgress) / this.subItems.length;
                     if (loadArmResource && this.subItems.length > 0)
                     {
                         for (const sub of this.subItems)
