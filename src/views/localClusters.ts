@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 import { KubeConfig, CoreV1Api } from '@kubernetes/client-node';
-import { executeInTerminal, openFileDialog, reportProgress } from '../common';
+import { executeInTerminal, openFileDialog } from '../common';
 import { ensureLoggedIn, loadResourceGroupItems, loadSubscriptionItems } from '../utils/azure';
 import { TelemetryEvent, sendTelemetryEvent } from '../telemetry';
 
@@ -49,18 +49,11 @@ export class LocalClustersProvider implements vscode.TreeDataProvider<vscode.Tre
             location: { viewId: 'localcluster' },
             title: 'Refreshing local K8S clusters...'
         }, async (progress, token) => {
-            const startProgress = 0;
-            const kubeCfgLoadProgress = 10;
-            const kubeCtxLoadProgress = 90;
-            const completeProgress = 100;
-
-            var currProg = reportProgress(progress, startProgress, startProgress);
             const children: LocalClusterViewItem[] = [];
             try
             {
                 this.kubeconfig.loadFromDefault();
     
-                currProg = reportProgress(progress, currProg, kubeCfgLoadProgress);
                 const contexts = this.kubeconfig.getContexts();
                 if (contexts === undefined || contexts.length === 0)
                 {
@@ -69,7 +62,6 @@ export class LocalClustersProvider implements vscode.TreeDataProvider<vscode.Tre
     
                 // Check cluster compatibility
                 const currentContext = this.kubeconfig.getCurrentContext();
-                const ctxLoadProgressInc = (kubeCtxLoadProgress - kubeCfgLoadProgress) / contexts.length;
                 try
                 {
                     for (const ctx of contexts)
@@ -95,19 +87,16 @@ export class LocalClustersProvider implements vscode.TreeDataProvider<vscode.Tre
                                     scanRes[0],
                                     scanRes[1],
                                     ctx.name === currentContext));
-                            currProg = reportProgress(progress, currProg, currProg + ctxLoadProgressInc);
                         }
                     }
                 }
                 finally
                 {
                     this.kubeconfig.setCurrentContext(currentContext);
-                    currProg = reportProgress(progress, currProg, kubeCtxLoadProgress);
                 }
             }
             finally
             {
-                currProg = reportProgress(progress, currProg, completeProgress);
                 const askCreateCluster = children.length === 0;
                 await vscode.commands.executeCommand('setContext', askCreateClusterContextName, askCreateCluster);
                 return children;

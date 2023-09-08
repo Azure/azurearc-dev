@@ -179,13 +179,8 @@
     "viewsWelcome": [
       {
         "view": "arccluster",
-        "contents": "You have not yet signed in to Azure.\n[Login to Azure](command:azurearc.azLoginAndLoadCache)\nPlease sign in to work with your Arc-enabled clusters",
+        "contents": "You have not yet signed in to Azure.\n[Login to Azure](command:azure-account.askForLogin)\nPlease sign in to work with your Arc-enabled clusters",
         "when": "askAzLogin == true"
-      },
-      {
-        "view": "arccluster",
-        "contents": "Busy Loading azure subscriptions. Please kindly wait for a while.",
-        "when": "loadingSubRg == true"
       },
       {
         "view": "arccluster",

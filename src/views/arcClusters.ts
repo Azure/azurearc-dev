@@ -1,9 +1,8 @@
 import * as vscode from 'vscode';
-import { SubscriptionItem, buildSubscriptionItems, loadSubscriptionItems, ensureLoggedIn, isLoggedIn } from '../utils/azure';
-import { executeInTerminal, reportProgress } from '../common';
+import { SubscriptionItem, buildSubscriptionItems, isLoggedIn } from '../utils/azure';
+import { executeInTerminal } from '../common';
 
 const askSubRgContextName = 'askSubRg';
-const loadingSubRgContextName = 'loadingSubRg';
 const askAzLoginContextName = 'askAzLogin';
 
 const subRgSelectionKeyName = "subRgSelection";
@@ -11,7 +10,6 @@ const subRgSelectionKeyName = "subRgSelection";
 enum ClusterViewStatus
 {
     notLoggedIn,
-    loadingSubRg,
     noSubRgSelection,
     noArcClusters,
     ok
@@ -48,38 +46,27 @@ class ArcClustersInfo
     async setWelcomeViewVisibility(status: ClusterViewStatus)
     {
         var askAzLogin = false;
-        var loadingSubRg = false;
         var askSubRg = false;
         switch (status)
         {
             case ClusterViewStatus.notLoggedIn:
                 askAzLogin = true;
-                loadingSubRg = false;
-                askSubRg = false;
-                break;
-
-            case ClusterViewStatus.loadingSubRg:
-                askAzLogin = false;
-                loadingSubRg = true;
                 askSubRg = false;
                 break;
 
             case ClusterViewStatus.noSubRgSelection:
                 askAzLogin = false;
-                loadingSubRg = false;
                 askSubRg = true;
                 break;
 
             case ClusterViewStatus.noArcClusters:
             case ClusterViewStatus.ok:
                 askAzLogin = false;
-                loadingSubRg = false;
                 askSubRg = false;
                 break;
         }
 
         await vscode.commands.executeCommand('setContext', askAzLoginContextName, askAzLogin);
-        await vscode.commands.executeCommand('setContext', loadingSubRgContextName, loadingSubRg);
         await vscode.commands.executeCommand('setContext', askSubRgContextName, askSubRg);
     }
 
@@ -87,15 +74,9 @@ class ArcClustersInfo
     async refreshClusters(loadArmResource: boolean = true, forceLoadSubRg: boolean = false)
     {
         return await vscode.window.withProgress({
-            location: { viewId: 'arccluster' },
+            location: vscode.ProgressLocation.Notification,
             title: 'Reloading Arc clusters...'
         }, async (progress, token) => {
-            const startProgress = 0;
-            const loginProgress = 20;
-            const loadArmResourcesProgress = 90;
-            const completeProgress = 100;
-
-            var currProg = reportProgress(progress, startProgress, startProgress);
             var status = ClusterViewStatus.ok;
             try
             {
@@ -105,11 +86,11 @@ class ArcClustersInfo
                 {
                     this.subItems = [];
                     status = ClusterViewStatus.notLoggedIn;
-                    currProg = reportProgress(progress, currProg, loadArmResourcesProgress);
+                    progress.report({message: "Logging In"});
                 }
                 else
                 {
-                    currProg = reportProgress(progress, currProg, loginProgress);
+                    progress.report({message: "Logged In"});
                     const subRgSelection = this.getSubRgSelection();
 
                     if ((this.subItems.length === 0 || this.subItems.every(_ => _.resourceGroups.length === 0) || forceLoadSubRg) &&
@@ -125,19 +106,16 @@ class ArcClustersInfo
                         loadArmResource = true;
                     }
 
-                    const inc = (loadArmResourcesProgress - loginProgress) / this.subItems.length;
                     if (loadArmResource && this.subItems.length > 0)
                     {
                         for (const sub of this.subItems)
                         {
                             await sub.loadResources(
                                 [this.connectedClustersResourceType, this.provisionedClustersResourceType]);
-                            currProg = reportProgress(progress, currProg, currProg + inc);
                             await new Promise((resolve) => setTimeout(resolve, 200));
                         }
                     }
 
-                    currProg = reportProgress(progress, currProg, loadArmResourcesProgress);
                     if (!this.hasSubRgSelection())
                     {
                         status = ClusterViewStatus.noSubRgSelection;
@@ -153,7 +131,6 @@ class ArcClustersInfo
             finally
             {
                 await this.setWelcomeViewVisibility(status);
-                currProg = reportProgress(progress, currProg, completeProgress);
             }
         });
     }
@@ -182,16 +159,6 @@ class ArcClustersInfo
     getSubRgSelection()
     {
         return this.context?.globalState.get<{ [key: string]: string[] }>(subRgSelectionKeyName);
-    }
-
-    async azLoginAndLoadCache()
-    {
-        const loggedIn = await ensureLoggedIn();
-        if (loggedIn)
-        {
-            await this.setWelcomeViewVisibility(ClusterViewStatus.loadingSubRg);
-            await loadSubscriptionItems(false);
-        }
     }
 }
 
@@ -246,11 +213,6 @@ export class ArcClustersProvider implements vscode.TreeDataProvider<ArcClusterVi
     {
         await this.clustersInfo.refreshClusters(loadArmResource, forceLoadSubRg);
         this._onDidChangeTreeData.fire();
-    }
-
-    async azLoginAndLoadCache()
-    {
-        await this.clustersInfo.azLoginAndLoadCache();
     }
 
     getTreeItem(element: ArcClusterViewItemBase): vscode.TreeItem
