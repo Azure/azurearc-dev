@@ -49,11 +49,6 @@ export class LocalClustersProvider implements vscode.TreeDataProvider<vscode.Tre
             location: { viewId: 'localcluster' },
             title: 'Refreshing local K8S clusters...'
         }, async (progress, token) => {
-            const startProgress = 0;
-            const kubeCfgLoadProgress = 10;
-            const kubeCtxLoadProgress = 90;
-            const completeProgress = 100;
-
             const children: LocalClusterViewItem[] = [];
             try
             {
@@ -67,7 +62,6 @@ export class LocalClustersProvider implements vscode.TreeDataProvider<vscode.Tre
     
                 // Check cluster compatibility
                 const currentContext = this.kubeconfig.getCurrentContext();
-                const ctxLoadProgressInc = (kubeCtxLoadProgress - kubeCfgLoadProgress) / contexts.length;
                 try
                 {
                     for (const ctx of contexts)
