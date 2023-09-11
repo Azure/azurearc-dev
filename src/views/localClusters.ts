@@ -252,50 +252,26 @@ export async function createAksEE()
         if (result === proceed)
         {
             sendTelemetryEvent(TelemetryEvent.downloadAksEE);
-            var dir = await openFileDialog(false, true, false, 'Select a folder to download installation scripts');
+            var dir = await openFileDialog(false, true, false, 'Select a folder to install AKS EE');
             if (dir === undefined)
             {
                 return;
             }
 
-            const dest = path.join(dir, 'Deploy-AksEE.ps1');
-            const content =
-`
-try
-{
-    $url = "https://raw.githubusercontent.com/Azure/AKS-Edge/main/tools/scripts/AksEdgeQuickStart/AksEdgeQuickStart.ps1"
-    Invoke-WebRequest -Uri $url -OutFile .\\AksEdgeQuickStart.ps1
-    Unblock-File .\\AksEdgeQuickStart.ps1
-    Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
+            const installScriptSrc = path.join(__dirname, 'scripts', 'Install-AksEE.ps1');
+            const dest = path.join(dir, 'Install-AksEE.ps1');
+            fs.copyFile(installScriptSrc, dest, (err) => {
+                if (err)
+                {
+                    throw err;
+                }
 
-    Write-Progress -Activity "Installing AKS EE, this could take approximately 5 mins" -Status "Installing..."
-    .\\AksEdgeQuickStart.ps1
+                console.log('Installation script copied successfully!');
+            });
 
-    Write-Host "\`nAKS EE quickstart execution completed. If there were any failures, please check out these manual installation steps\`nhttps://learn.microsoft.com/en-us/azure/aks/hybrid/aks-edge-howto-setup-machine"  -ForegroundColor Cyan
-}
-catch
-{
-    Write-Host "An error occurred:"
-    Write-Host $_
-}
-finally
-{
-    Write-Progress -Activity "Installing AKS EE, this could take approximately 5 mins" -Completed
-    Write-Host "Press any key to exit..."
-    while ($true)
-    {
-        if ([System.Console]::KeyAvailable)
-        {
-            break
-        }
-    }
-}
-`;
-
-            fs.writeFileSync(dest, content, { flag: 'w' });
             vscode.window.showInformationMessage(
-                `Deployment script downloaded to ${dest} and will be executed in a new powershell console with admin privilege.`);
-            var cmd = `Start-Process powershell -verb runas -ArgumentList ("-Command ${dest}")`;
+                `Installation script copied to ${dest} and will be executed in a new powershell console with admin privilege.`);
+            var cmd = `Start-Process powershell -verb runas -ArgumentList ("-Command ${dest} -InstallDir ${dir}")`;
             executeInTerminal(cmd);
         }
     });

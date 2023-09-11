@@ -179,59 +179,6 @@ export class CloudGPTViewProvider implements vscode.WebviewViewProvider {
         this._view?.webview.postMessage({ type: 'setPrompt', value: this._prompt });
         this._view?.webview.postMessage({ type: 'addResponse', value: '...' });
 
-        // const agent = this._chatGPTAPI;
-        // try
-        // {
-        //     // Send the search prompt to the ChatGPTAPI instance and store the response
-        //     const res = await agent.sendMessage(searchPrompt, {
-        //         onProgress: (partialResponse) => {
-        //             // If the message number has changed, don't show the partial response
-        //             if (this._currentMessageNumber !== currentMessageNumber) {
-        //                 return;
-        //             }
-        //             console.log("onProgress");
-        //             if (this._view && this._view.visible) {
-        //                 response = partialResponse.text;
-        //                 this._response = response;
-        //                 this._view.webview.postMessage({ type: 'addResponse', value: response });
-        //             }
-        //         },
-        //         timeoutMs: (this._settings.timeoutLength || 60) * 1000,
-        //         ...this._conversation
-        //     });
-
-        //     if (this._currentMessageNumber !== currentMessageNumber)
-        //     {
-        //         return;
-        //     }
-
-        //     console.log(res);
-
-        //     response = res.text;
-        //     if (res.detail?.usage?.total_tokens) {
-        //         response += `\n\n---\n*<sub>Tokens used: ${res.detail.usage.total_tokens} (${res.detail.usage.prompt_tokens}+${res.detail.usage.completion_tokens})</sub>*`;
-        //     }
-
-        //     if (this._settings.keepConversation){
-        //         this._conversation = {
-        //             parentMessageId: res.id
-        //         };
-        //     }
-        // }
-        // catch (e:any)
-        // {
-        //     console.error(e);
-        //     if (this._currentMessageNumber === currentMessageNumber)
-        //     {
-        //         response = this._response;
-        //         response += `\n\n---\n[ERROR] ${e}`;
-        //     }
-        // }
-
-        // if (this._currentMessageNumber !== currentMessageNumber) {
-        //     return;
-        // }
-
         const headers = {
             "Content-Type": "application/json",
             "api-key": this._authInfo.apiKey

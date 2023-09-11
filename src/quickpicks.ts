@@ -1,7 +1,6 @@
 import * as vscode from 'vscode';
 import * as common from './common';
 import { generateDependencyBicep } from './bicep';
-import { validateHelm } from './helm';
 import { SampleTypes, selectSample } from './samples';
 import { createAksEE } from './views/localClusters';
 
@@ -24,12 +23,6 @@ export const arcExtCmdOptions: common.ArcExtOption[] =
         generateDependencyBicep,
         '',
         'Provision Azure/Arc resources on Azure.'
-    ),
-    new common.ArcExtOption(
-        'Helm chart validation',
-        validateHelm,
-        '',
-        'Validate helm charts against Arc requirements.'
     )
 ];
 
