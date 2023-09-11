@@ -36,7 +36,21 @@ Get familiar with what the extension offers by going through the Walkthrough. Yo
 5. Your cluster will appear in the Native K8s Cluster view. Click the connect to Arc button to Arc enable your cluster.
 <br/>
 <img src="https://petwsa.blob.core.windows.net/vscext/connectToArcIcon.png" alt="alt text">
-
+   - To Arc enable your cluster, you'll need to add connectedk8s extension and register some namespaces.
+   ```powershell
+   az extension add --name connectedk8s
+   ```
+   ```
+   az provider register --namespace Microsoft.Kubernetes
+   az provider register --namespace Microsoft.KubernetesConfiguration
+   az provider register --namespace Microsoft.ExtendedLocation
+   ```
+   - Monitor the registration process. Registration may take up to 10 minutes.
+   ```
+   az provider show -n Microsoft.Kubernetes -o table
+   az provider show -n Microsoft.KubernetesConfiguration -o table
+   az provider show -n Microsoft.ExtendedLocation -o table
+   ```
 6. Your cluster will appear in the Native K8s Cluster view. Click the connect to Arc button to Arc enable your cluster. 
 
 7. Using the command palette, please provide an azure subscription, resource group and a name for your cluster.
