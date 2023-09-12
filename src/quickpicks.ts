@@ -13,10 +13,10 @@ export const arcExtCmdOptions: common.ArcExtOption[] =
         'Check out what Arc-enabled services can do from a list of samples.'
     ),
     new common.ArcExtOption(
-        'Provision a local developlment K8S cluster',
+        'Provision a local development K8S cluster',
         createAksEE,
         '',
-        'Provision a local AKS EE cluster and optinally connect to Arc.'
+        'Provision a local AKS EE cluster and optionally connect to Arc.'
     ),
     new common.ArcExtOption(
         'Generate Bicep for Azure/Arc dependencies',

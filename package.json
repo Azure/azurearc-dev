@@ -240,7 +240,7 @@
             {
                 "id": "samples",
                 "title": "Discover sample applications",
-                "description": "This extension provids links to two kinds of sample applications:\nJumpstart Agora: Import the Jumpstart Agora Contoso repository, and follow the readme to deploy the Supermarket scenario\nSample plug-and-play applications: Clone one of our reference applications to set up an arc enabled workloads.\n[Get Samples](command:azurearc.getSamples)",
+                "description": "This extension provides links to two kinds of sample applications:\nJumpstart Agora: Import the Jumpstart Agora Contoso repository, and follow the readme to deploy the Supermarket scenario\nSample plug-and-play applications: Clone one of our reference applications to set up an arc enabled workloads.\n[Get Samples](command:azurearc.getSamples)",
                 "media": {
                     "image": "media/getsample.gif",
                     "altText": "Empty image"

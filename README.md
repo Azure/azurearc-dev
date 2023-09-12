@@ -29,7 +29,7 @@ Get familiar with what the extension offers by going through the Walkthrough. Yo
 
 <br/>
 
-3. Navigate to the folder where you want you download the install script and click “select folder” 
+3. Navigate to the folder where you want to download the install script and click “select folder” 
 
 4. Once the script is downloaded, the extension automatically opens a powershell console and ask for admin privilege to run the installation script.
 
