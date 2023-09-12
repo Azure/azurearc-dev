@@ -55,13 +55,7 @@ Get familiar with what the extension offers by going through the Walkthrough. Yo
 
 7. Using the command palette, please provide an azure subscription, resource group and a name for your cluster.
 
-> - Note: This environment is intended to be used for development and testing purposes only. You are able to use this environment for 30 days for free once you connect to Arc.  
->   - **Testing notes: We are investigating if we can show a notification to users close to the 30d mark.
- We also chose to deploy the cluster as not arc enabled because we would need certain inputs (RG, name, sub) from the user. I like this experience because:
->   - This decouples process of installing EE (which may or may not succeed and arc enabling. If we do them both at once, it becomes harder to identify what failed in the process. 
->   - I think the flow would also be confusing because we would need to ask up front from RG, sub, etc before we download anything. 
->   - I also like the idea of making progress in small steps vs one step, which I think strikes a good balance between enabling learning and automation. 
-Please provide feedback here.** 
+> - Note: This environment is intended to be used for development and testing purposes only. You are able to use this environment for 30 days for free once you connect to Arc.
 
 
 ## Create your first Arc-enabled application

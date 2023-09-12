@@ -14,8 +14,6 @@ export enum SampleTypes
 
 export async function selectSample(type: SampleTypes)
 {
-    // petw: use this url when release
-    // const url = "https://raw.githubusercontent.com/Azure/azurearc-dev/main/src/sample.json";
     const url = "https://petwsa.blob.core.windows.net/vscext/samples.json";
     const response = await axios.get(url);
     const samples = response.data as {
