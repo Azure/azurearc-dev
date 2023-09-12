@@ -234,17 +234,21 @@ export class ArcClustersProvider implements vscode.TreeDataProvider<ArcClusterVi
         {
             if (element instanceof SubscriptionViewItem)
             {
-                const sub = subItems.find(_ => _.label === element.label);
+                const sub = subItems.find(_ => _.subscription.subscriptionId === element.subscriptionId);
                 sub?.resourceGroups.forEach(rg =>
                 {
                     children.push(new ResourceGroupViewItem(
-                        rg.label, vscode.TreeItemCollapsibleState.Expanded, sub.label, rg.resourceGroup.location));
+                        rg.label,
+                        vscode.TreeItemCollapsibleState.Expanded,
+                        sub.label,
+                        sub.subscription.subscriptionId!,
+                        rg.resourceGroup.location));
                 });
             }
             else if (element instanceof ResourceGroupViewItem)
             {
                 const rgItem = element as ResourceGroupViewItem;
-                const sub = subItems.find(_ => _.label === rgItem.subscriptionName);
+                const sub = subItems.find(_ => _.subscription.subscriptionId === rgItem.subscriptionId);
                 const rg = sub?.resourceGroups.find(_ => _.label === element.label);
                 rg?.resources.forEach(resource => {
                     children.push(new ArcClusterViewItem(
@@ -260,7 +264,7 @@ export class ArcClustersProvider implements vscode.TreeDataProvider<ArcClusterVi
         else
         {
             children.push(...subItems.map(_ => new SubscriptionViewItem(
-                _.label, vscode.TreeItemCollapsibleState.Expanded, _.subscription.subscriptionId)));
+                _.label, _.subscription.subscriptionId!, vscode.TreeItemCollapsibleState.Expanded, _.subscription.subscriptionId)));
         }
 
         return children;
@@ -289,10 +293,12 @@ class SubscriptionViewItem extends ArcClusterViewItemBase
 {
     constructor(
         public readonly label: string,
+        public readonly subscriptionId: string,
         public readonly collapsibleState: vscode.TreeItemCollapsibleState,
         public readonly description?: string)
     {
         super(label, collapsibleState);
+        this.subscriptionId = subscriptionId;
         this.description = description;
     }
 }
@@ -303,10 +309,12 @@ class ResourceGroupViewItem extends ArcClusterViewItemBase
         public readonly label: string,
         public readonly collapsibleState: vscode.TreeItemCollapsibleState,
         public readonly subscriptionName: string,
+        public readonly subscriptionId: string,
         public readonly description?: string)
     {
         super(label, collapsibleState);
         this.subscriptionName = subscriptionName;
+        this.subscriptionId = subscriptionId;
         this.description = description;
     }
 }
