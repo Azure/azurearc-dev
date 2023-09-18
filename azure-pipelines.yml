@@ -10,7 +10,7 @@ pool:
   vmImage: windows-latest
 
 steps:
-- script: Powershell.exe -File C:\my_path\yada_yada\run_import_script.ps1
+- script: Powershell.exe -File .\build.ps1
   displayName: 'Run a one-line script'
 
 - script: |
