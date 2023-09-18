@@ -10,7 +10,7 @@ pool:
   vmImage: windows-latest
 
 steps:
-- script: dir
+- script: .\build.ps1
   displayName: 'Run a one-line script'
 
 - script: |
