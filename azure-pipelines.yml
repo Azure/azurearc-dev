@@ -11,6 +11,8 @@ pool:
 
 steps:
 - script: |
+    npm install
+    npm install -g @vscode/vsce
     Powershell.exe -File .\build.ps1
     echo See https://aka.ms/yaml
   displayName: 'Build'
