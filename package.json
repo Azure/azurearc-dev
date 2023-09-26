@@ -5,7 +5,7 @@
   "preview": true,
   "displayName": "Azure Arc",
   "description": "Azure Arc",
-  "version": "0.0.20",
+  "version": "0.0.21",
   "engines": {
     "vscode": "^1.78.0"
   },
