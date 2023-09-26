@@ -12,8 +12,11 @@ pool:
 steps:
 - script: |
     npm install
-    npm install -g vsce
   displayName: 'Install npm'
+  
+- script: |
+    npm install -g vsce
+  displayName: 'Install vsce'
 
 - script: |
     Powershell.exe -File .\build.ps1
