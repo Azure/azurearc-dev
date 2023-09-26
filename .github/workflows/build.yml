@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     strategy:
       matrix:
@@ -29,7 +29,8 @@ jobs:
         npm ci --no-optional
 
     - name: Build
-      run: vsce package
+      run: |
+        .\build.ps1
 
     # Github action cannot run any UI tests
     # - name: Test

@@ -1,5 +1,3 @@
-npm install
-npm install -g @vscode/vsce
 npm run compile
 
 $ProjectFile = Join-Path $PSScriptRoot "src\codegen\Codegen.csproj"

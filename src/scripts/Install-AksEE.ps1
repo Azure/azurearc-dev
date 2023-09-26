@@ -4,22 +4,37 @@ param (
     [string] $InstallDir
 )
 
-Write-Host "Using installation directory '$InstallDir'."
-
-if (!(Test-Path $InstallDir -PathType Container))
-{
-    New-Item $InstallDir -ItemType Directory
-}
-
 try
 {
+    Write-Host "Using installation directory '$InstallDir'."
+
+    if (!(Test-Path $InstallDir -PathType Container))
+    {
+        New-Item $InstallDir -ItemType Directory
+    }
+    
+    # Divide by 1MB is intentional as FreePhysicalMemory is in KB
+    $freeMemInGB = (Get-WMIObject Win32_OperatingSystem).FreePhysicalMemory / 1MB
+    $minMem = 4.5
+    if ($freeMemInGB -lt $minMem)
+    {
+        throw "AKS-EE requires at least $minMem`GB of free memory on the system to work. Please free-up some memory and try again."
+    }
+
+    if ($null -eq (Get-Module PackageManagement))
+    {
+        Write-Host "Installing PackageManagement module"
+        Install-Module -Name PackageManagement
+    }
+
     try
     {
         Write-Progress -Activity "Install AKS EE" -Status "Start..."
-        $installedAksEE = Get-Package | ? Name -like "*AKS Edge Essentials*"
+        $installedAksEE = Get-Package | ? Name -like "*AKS Edge Essentials - K3s*"
         if ($installedAksEE)
         {
             Write-Host "Found AKS EE already installed" -ForegroundColor Green
+            $installedAksEE
         }
         else
         {
@@ -37,7 +52,7 @@ try
 
             Write-Progress -Activity "Install AKS EE" -Status "Installing AKS EE MSI..." -PercentComplete 50
             Write-Host "Installing AKS EE at $InstallDir, please follow instructions in the MSI installer"
-            Start-Process -FilePath msiexec.exe -ArgumentList "/i $msiPath INSTALLDIR=$InstallDir VHDXDIR=$InstallDir\vhdx" -Wait
+            Start-Process -FilePath msiexec.exe -ArgumentList "/i $msiPath VHDXDIR=$InstallDir\vhdx" -Wait
 
             Write-Host "AKS EE installation completed, please make sure the installation is successful or subequent installation steps may fail."
         }
