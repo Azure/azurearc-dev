@@ -13,6 +13,9 @@ steps:
 - script: |
     npm install
     npm install -g @vscode/vsce
+  displayName: 'Install npm'
+
+- script: |
     Powershell.exe -File .\build.ps1
     echo See https://aka.ms/yaml
   displayName: 'Build'
