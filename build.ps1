@@ -1,3 +1,5 @@
+npm install
+npm install -g @vscode/vsce
 npm run compile
 
 $ProjectFile = Join-Path $PSScriptRoot "src\codegen\Codegen.csproj"
@@ -15,4 +17,4 @@ if (!(Test-Path $scriptDir))
 
 Copy-Item $PSScriptRoot\src\Scripts\* $scriptDir -Recurse -Force
 
-vsce package
+vsce package --no-update-package-json
