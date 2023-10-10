@@ -13,14 +13,14 @@ We welcome feedbacks and feature requests via the issues page in [GitHub reposit
 
 ## Check out the extension Walkthrough
 Get familiar with what the extension offers by going through the Walkthrough. You can press "F1" to bring up the command palette and type in "Welcome: Open Walkthrough" command, and then click on it to select the "Get Started with Azure Arc in VS Code" Walkthroughs from the list.
-<img src="https://petwsa.blob.core.windows.net/vscext/openWalkthrough.png" alt="alt text">
+<img src="https://github.com/Azure/azurearc-dev/blob/main/media/openWalkthrough.png?raw=true" alt="alt text">
 
 ## Deploy your first Arc-enabled environment
 1. Select the plus icon to start creating your AKS Edge Essentials cluster.
 <br/>
-<img src="https://petwsa.blob.core.windows.net/vscext/provisionAksEE.png" alt="alt text">
+<img src="https://github.com/Azure/azurearc-dev/blob/main/media/provisionAksEE.png?raw=true" alt="alt text">
 <br/>
-<img src="https://petwsa.blob.core.windows.net/vscext/provisionAksEeNotification.png" alt="alt text">
+<img src="https://github.com/Azure/azurearc-dev/blob/main/media/provisionAksEeNotification.png?raw=true" alt="alt text">
 
 2. Ensure that your machine meets the requirements from single node deployment for Edge Essentials. For a successful install, you will also need to ensure:
     - No VPN connection 
@@ -35,7 +35,7 @@ Get familiar with what the extension offers by going through the Walkthrough. Yo
 
 5. Your cluster will appear in the Native K8s Cluster view. Click the connect to Arc button to Arc enable your cluster.
 <br/>
-<img src="https://petwsa.blob.core.windows.net/vscext/connectToArcIcon.png" alt="alt text">
+<img src="https://github.com/Azure/azurearc-dev/blob/main/media/connectToArcIcon.png?raw=true" alt="alt text">
    - To Arc enable your cluster, you'll need to add connectedk8s extension and register some namespaces.
    ```powershell
    az extension add --name connectedk8s
@@ -79,7 +79,7 @@ When you submit a pull request, a CLA-bot will automatically determine whether y
 This project has adopted the Microsoft Open Source Code of Conduct. For more information see the Code of Conduct FAQ or contact opencode@microsoft.com with any additional questions or comments.
 
 ## Telemetry
-VS Code collects usage data and sends it to Microsoft to help improve our products and services. Read our [privacy statement](https://privacy.microsoft.com/en-us/privacystatement) to learn more. If you don’t wish to send usage data to Microsoft, you can set the `telemetry.enableTelemetry` setting to `false`. Learn more in our [FAQ](https://code.visualstudio.com/docs/supporting/faq#_how-to-disable-telemetry-reporting).
+VS Code collects usage data and sends it to Microsoft to help improve our products and services. Read our [privacy statement](http://go.microsoft.com/fwlink/?LinkId=521839) to learn more. If you don’t wish to send usage data to Microsoft, you can set the `telemetry.enableTelemetry` setting to `false`. Learn more in our [FAQ](https://code.visualstudio.com/docs/supporting/faq#_how-to-disable-telemetry-reporting).
 
 ## Known Issues
 

@@ -31,7 +31,7 @@ export class HelpProvider implements vscode.TreeDataProvider<HelpItem>
                     {
                         command: 'azurearc.openWebpage',
                         title: 'Doc',
-                        arguments: ['https://www.microsoft.com/azure/partners/resources/azure-arc-jumpstart']
+                        arguments: ['https://learn.microsoft.com/en-us/training/modules/intro-to-azure-arc/']
                     }),
                 new HelpItem(
                     "Send feedbacks to us",
