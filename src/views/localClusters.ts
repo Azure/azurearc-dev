@@ -52,8 +52,14 @@ export class LocalClustersProvider implements vscode.TreeDataProvider<vscode.Tre
             const children: LocalClusterViewItem[] = [];
             try
             {
-                this.kubeconfig.loadFromDefault();
-    
+                const kubeconfigPath =  path.join(process.env.USERPROFILE!, '.kube/config');
+                if (!fs.existsSync(kubeconfigPath))
+                {
+                    return [];
+                }
+
+                this.kubeconfig.loadFromFile(kubeconfigPath);
+
                 const contexts = this.kubeconfig.getContexts();
                 if (contexts === undefined || contexts.length === 0)
                 {
