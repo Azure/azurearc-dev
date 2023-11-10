@@ -301,7 +301,7 @@
     "@kubernetes/client-node": "^0.18.1",
     "@microsoft/vscode-azext-utils": "^1.0.0",
     "@vscode/extension-telemetry": "^0.8.1",
-    "axios": "^1.4.0",
+    "axios": "^1.6.0",
     "bufferutil": "^4.0.7",
     "chatgpt": "^5.2.2",
     "gpt3-tokenizer": "^1.1.5",
